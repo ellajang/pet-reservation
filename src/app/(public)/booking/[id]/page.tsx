@@ -208,7 +208,7 @@ export default function BookingPage() {
                     : "bg-gray-200 text-muted"
                 }`}
               >
-                {displayStep > s ? "✓" : s}
+                {displayStep > s ? <Check className="w-4 h-4" /> : s}
               </div>
               <span className="text-xs text-muted mt-1 whitespace-nowrap">
                 {stepLabels[s - 1]}
