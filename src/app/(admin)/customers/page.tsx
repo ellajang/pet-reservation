@@ -1,45 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Search, Phone, Dog, ChevronRight } from "lucide-react";
 
-interface CustomerDisplay {
+interface CustomerData {
   id: string;
   name: string;
   phone: string;
-  pets: { name: string; breed: string }[];
-  visitCount: number;
-  lastVisit: string;
-  noShowCount: number;
+  no_show_count: number;
+  created_at: string;
+  pets: { id: string; name: string; breed: string; weight: number | null }[];
 }
-
-const sampleCustomers: CustomerDisplay[] = [
-  {
-    id: "1",
-    name: "김민지",
-    phone: "010-1234-5678",
-    pets: [{ name: "초코", breed: "말티즈" }],
-    visitCount: 5,
-    lastVisit: "2026-03-25",
-    noShowCount: 0,
-  },
-  {
-    id: "2",
-    name: "이수진",
-    phone: "010-9876-5432",
-    pets: [
-      { name: "몽이", breed: "푸들" },
-      { name: "콩이", breed: "비숑" },
-    ],
-    visitCount: 3,
-    lastVisit: "2026-03-20",
-    noShowCount: 1,
-  },
-];
 
 export default function CustomersPage() {
   const [search, setSearch] = useState("");
+  const [customers, setCustomers] = useState<CustomerData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [newCustomer, setNewCustomer] = useState({
     name: "",
     phone: "",
@@ -51,28 +29,60 @@ export default function CustomersPage() {
     specialNotes: "",
   });
 
-  const filtered = sampleCustomers.filter(
-    (c) =>
-      c.name.includes(search) ||
-      c.phone.includes(search) ||
-      c.pets.some((p) => p.name.includes(search))
-  );
+  const fetchCustomers = useCallback(() => {
+    setLoading(true);
+    fetch(`/api/customers?search=${encodeURIComponent(search)}`)
+      .then((res) => res.json())
+      .then(setCustomers)
+      .finally(() => setLoading(false));
+  }, [search]);
 
-  const handleAddCustomer = (e: React.FormEvent) => {
+  useEffect(() => {
+    const timer = setTimeout(fetchCustomers, 300);
+    return () => clearTimeout(timer);
+  }, [fetchCustomers]);
+
+  const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Supabase에 저장
-    console.log("고객 등록:", newCustomer);
-    setShowAddForm(false);
-    setNewCustomer({
-      name: "",
-      phone: "",
-      petName: "",
-      breed: "",
-      weight: "",
-      gender: "male",
-      neutered: false,
-      specialNotes: "",
+    setSubmitting(true);
+
+    const res = await fetch("/api/customers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customer: {
+          name: newCustomer.name,
+          phone: newCustomer.phone,
+        },
+        pet: {
+          name: newCustomer.petName,
+          breed: newCustomer.breed,
+          weight: newCustomer.weight ? parseFloat(newCustomer.weight) : null,
+          gender: newCustomer.gender,
+          neutered: newCustomer.neutered,
+          specialNotes: newCustomer.specialNotes,
+        },
+      }),
     });
+
+    if (res.ok) {
+      setShowAddForm(false);
+      setNewCustomer({
+        name: "",
+        phone: "",
+        petName: "",
+        breed: "",
+        weight: "",
+        gender: "male",
+        neutered: false,
+        specialNotes: "",
+      });
+      fetchCustomers();
+    } else {
+      const err = await res.json();
+      alert(err.error || "고객 등록에 실패했습니다");
+    }
+    setSubmitting(false);
   };
 
   return (
@@ -88,59 +98,63 @@ export default function CustomersPage() {
         </button>
       </div>
 
-      {/* 검색 */}
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="고객명, 연락처, 반려견 이름으로 검색"
+          placeholder="고객명, 연락처로 검색"
           className="w-full pl-10 pr-4 py-3 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
-      {/* 고객 목록 */}
       <div className="space-y-3">
-        {filtered.map((customer) => (
-          <div
-            key={customer.id}
-            className="bg-white rounded-xl border border-border shadow-sm p-4 hover:border-primary/30 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="font-semibold text-lg">{customer.name}</h3>
-                  {customer.noShowCount > 0 && (
-                    <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
-                      노쇼 {customer.noShowCount}회
+        {loading ? (
+          <p className="text-muted text-center py-8">불러오는 중...</p>
+        ) : customers.length === 0 ? (
+          <p className="text-muted text-center py-8">
+            {search ? "검색 결과가 없습니다" : "등록된 고객이 없습니다"}
+          </p>
+        ) : (
+          customers.map((customer) => (
+            <div
+              key={customer.id}
+              className="bg-white rounded-xl border border-border shadow-sm p-4 hover:border-primary/30 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="font-semibold text-lg">{customer.name}</h3>
+                    {customer.no_show_count > 0 && (
+                      <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
+                        노쇼 {customer.no_show_count}회
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-4 text-sm text-muted">
+                    <span className="flex items-center gap-1">
+                      <Phone className="w-3.5 h-3.5" />
+                      {customer.phone}
                     </span>
-                  )}
+                    {customer.pets.length > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Dog className="w-3.5 h-3.5" />
+                        {customer.pets
+                          .map((p) => `${p.name}(${p.breed})`)
+                          .join(", ")}
+                      </span>
+                    )}
+                  </div>
                 </div>
-
-                <div className="flex items-center gap-4 text-sm text-muted">
-                  <span className="flex items-center gap-1">
-                    <Phone className="w-3.5 h-3.5" />
-                    {customer.phone}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Dog className="w-3.5 h-3.5" />
-                    {customer.pets.map((p) => `${p.name}(${p.breed})`).join(", ")}
-                  </span>
-                </div>
-
-                <div className="flex gap-4 mt-2 text-xs text-muted">
-                  <span>방문 {customer.visitCount}회</span>
-                  <span>마지막 방문: {customer.lastVisit}</span>
-                </div>
+                <ChevronRight className="w-5 h-5 text-muted" />
               </div>
-              <ChevronRight className="w-5 h-5 text-muted" />
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
-      {/* 고객 등록 모달 */}
       {showAddForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
@@ -170,9 +184,7 @@ export default function CustomersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    연락처
-                  </label>
+                  <label className="block text-sm font-medium mb-1">연락처</label>
                   <input
                     type="tel"
                     value={newCustomer.phone}
@@ -191,9 +203,7 @@ export default function CustomersPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    반려견 이름
-                  </label>
+                  <label className="block text-sm font-medium mb-1">반려견 이름</label>
                   <input
                     type="text"
                     value={newCustomer.petName}
@@ -221,9 +231,7 @@ export default function CustomersPage() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    몸무게 (kg)
-                  </label>
+                  <label className="block text-sm font-medium mb-1">몸무게 (kg)</label>
                   <input
                     type="number"
                     value={newCustomer.weight}
@@ -253,10 +261,7 @@ export default function CustomersPage() {
                       type="checkbox"
                       checked={newCustomer.neutered}
                       onChange={(e) =>
-                        setNewCustomer({
-                          ...newCustomer,
-                          neutered: e.target.checked,
-                        })
+                        setNewCustomer({ ...newCustomer, neutered: e.target.checked })
                       }
                       className="rounded"
                     />
@@ -266,16 +271,11 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">
-                  특이사항
-                </label>
+                <label className="block text-sm font-medium mb-1">특이사항</label>
                 <textarea
                   value={newCustomer.specialNotes}
                   onChange={(e) =>
-                    setNewCustomer({
-                      ...newCustomer,
-                      specialNotes: e.target.value,
-                    })
+                    setNewCustomer({ ...newCustomer, specialNotes: e.target.value })
                   }
                   rows={3}
                   placeholder="공격성, 알러지, 주의사항 등"
@@ -293,9 +293,10 @@ export default function CustomersPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary-hover"
+                  disabled={submitting}
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary-hover disabled:opacity-50"
                 >
-                  등록
+                  {submitting ? "등록 중..." : "등록"}
                 </button>
               </div>
             </form>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Clock, User } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { ChevronLeft, ChevronRight, Plus, Clock, User, Check, X, AlertTriangle } from "lucide-react";
 import {
   format,
   startOfMonth,
@@ -18,38 +18,27 @@ import {
 import { ko } from "date-fns/locale";
 import ReservationModal from "@/components/reservation/ReservationModal";
 
-// 임시 데이터
-const sampleReservations = [
-  {
-    id: "1",
-    date: format(new Date(), "yyyy-MM-dd"),
-    startTime: "10:00",
-    endTime: "12:00",
-    customerName: "김민지",
-    petName: "초코",
-    serviceName: "전체미용",
-    status: "confirmed" as const,
-  },
-  {
-    id: "2",
-    date: format(new Date(), "yyyy-MM-dd"),
-    startTime: "14:00",
-    endTime: "15:00",
-    customerName: "이수진",
-    petName: "몽이",
-    serviceName: "목욕",
-    status: "confirmed" as const,
-  },
-];
+interface ReservationItem {
+  id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  price: number;
+  memo: string | null;
+  customers: { name: string; phone: string };
+  pets: { name: string; breed: string };
+  services: { name: string };
+}
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   confirmed: "bg-blue-100 text-blue-800 border-blue-200",
   completed: "bg-green-100 text-green-800 border-green-200",
   cancelled: "bg-gray-100 text-gray-600 border-gray-200",
   noshow: "bg-red-100 text-red-800 border-red-200",
 };
 
-const statusLabels = {
+const statusLabels: Record<string, string> = {
   confirmed: "확정",
   completed: "완료",
   cancelled: "취소",
@@ -60,6 +49,21 @@ export default function ReservationsPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showModal, setShowModal] = useState(false);
+  const [reservations, setReservations] = useState<ReservationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchReservations = useCallback(() => {
+    const month = format(currentMonth, "yyyy-MM");
+    setLoading(true);
+    fetch(`/api/reservations?month=${month}`)
+      .then((res) => res.json())
+      .then(setReservations)
+      .finally(() => setLoading(false));
+  }, [currentMonth]);
+
+  useEffect(() => {
+    fetchReservations();
+  }, [fetchReservations]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
@@ -73,9 +77,17 @@ export default function ReservationsPage() {
     day = addDays(day, 1);
   }
 
-  const dayReservations = sampleReservations.filter(
-    (r) => r.date === format(selectedDate, "yyyy-MM-dd")
-  );
+  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+  const dayReservations = reservations.filter((r) => r.date === selectedDateStr);
+
+  const updateStatus = async (id: string, status: string) => {
+    await fetch(`/api/reservations/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    fetchReservations();
+  };
 
   return (
     <div>
@@ -126,9 +138,9 @@ export default function ReservationsPage() {
             <div className="grid grid-cols-7 gap-1">
               {days.map((d, i) => {
                 const dateStr = format(d, "yyyy-MM-dd");
-                const hasReservation = sampleReservations.some(
-                  (r) => r.date === dateStr
-                );
+                const dayCount = reservations.filter(
+                  (r) => r.date === dateStr && r.status !== "cancelled"
+                ).length;
                 const isSelected = isSameDay(d, selectedDate);
 
                 return (
@@ -146,7 +158,7 @@ export default function ReservationsPage() {
                     }`}
                   >
                     {format(d, "d")}
-                    {hasReservation && !isSelected && (
+                    {dayCount > 0 && !isSelected && (
                       <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full" />
                     )}
                   </button>
@@ -168,7 +180,11 @@ export default function ReservationsPage() {
           </div>
 
           <div className="p-4 space-y-3">
-            {dayReservations.length === 0 ? (
+            {loading ? (
+              <p className="text-muted text-center py-8 text-sm">
+                불러오는 중...
+              </p>
+            ) : dayReservations.length === 0 ? (
               <p className="text-muted text-center py-8 text-sm">
                 예약이 없습니다
               </p>
@@ -182,16 +198,43 @@ export default function ReservationsPage() {
                     <span className="text-xs font-medium">
                       {statusLabels[r.status]}
                     </span>
-                    <span className="text-xs">{r.serviceName}</span>
+                    <span className="text-xs">{r.services?.name}</span>
                   </div>
                   <div className="flex items-center gap-1 text-sm">
                     <Clock className="w-3.5 h-3.5" />
-                    {r.startTime} - {r.endTime}
+                    {r.start_time.slice(0, 5)} - {r.end_time.slice(0, 5)}
                   </div>
                   <div className="flex items-center gap-1 text-sm mt-1">
                     <User className="w-3.5 h-3.5" />
-                    {r.customerName} / {r.petName}
+                    {r.customers?.name} / {r.pets?.name}
                   </div>
+                  <div className="text-xs mt-1">
+                    ₩{r.price.toLocaleString()}
+                  </div>
+
+                  {/* 상태 변경 버튼 */}
+                  {r.status === "confirmed" && (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => updateStatus(r.id, "completed")}
+                        className="flex items-center gap-1 text-xs bg-green-600 text-white px-2 py-1 rounded"
+                      >
+                        <Check className="w-3 h-3" /> 완료
+                      </button>
+                      <button
+                        onClick={() => updateStatus(r.id, "noshow")}
+                        className="flex items-center gap-1 text-xs bg-red-500 text-white px-2 py-1 rounded"
+                      >
+                        <AlertTriangle className="w-3 h-3" /> 노쇼
+                      </button>
+                      <button
+                        onClick={() => updateStatus(r.id, "cancelled")}
+                        className="flex items-center gap-1 text-xs bg-gray-400 text-white px-2 py-1 rounded"
+                      >
+                        <X className="w-3 h-3" /> 취소
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))
             )}
@@ -200,7 +243,10 @@ export default function ReservationsPage() {
       </div>
 
       {showModal && (
-        <ReservationModal onClose={() => setShowModal(false)} />
+        <ReservationModal
+          onClose={() => setShowModal(false)}
+          onSuccess={fetchReservations}
+        />
       )}
     </div>
   );

@@ -1,0 +1,48 @@
+import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
+
+export async function GET() {
+  const today = new Date().toISOString().split("T")[0];
+  const monthStart = today.slice(0, 7) + "-01";
+  const monthEnd = today.slice(0, 7) + "-31";
+
+  const [todayRes, customersRes, monthSalesRes, noshowRes] = await Promise.all([
+    // 오늘 예약
+    supabase
+      .from("reservations")
+      .select(`*, customers (*), pets (*), services (*)`)
+      .eq("date", today)
+      .neq("status", "cancelled")
+      .order("start_time"),
+    // 전체 고객 수
+    supabase
+      .from("customers")
+      .select("id", { count: "exact", head: true }),
+    // 이번 달 매출
+    supabase
+      .from("reservations")
+      .select("price")
+      .eq("status", "completed")
+      .gte("date", monthStart)
+      .lte("date", monthEnd),
+    // 이번 달 노쇼
+    supabase
+      .from("reservations")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "noshow")
+      .gte("date", monthStart)
+      .lte("date", monthEnd),
+  ]);
+
+  const monthlyRevenue = (monthSalesRes.data || []).reduce(
+    (sum, r) => sum + (r.price || 0),
+    0
+  );
+
+  return NextResponse.json({
+    todayReservations: todayRes.data || [],
+    totalCustomers: customersRes.count || 0,
+    monthlyRevenue,
+    monthlyNoshow: noshowRes.count || 0,
+  });
+}

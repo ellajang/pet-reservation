@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Clock, Check } from "lucide-react";
 
-const services = [
-  { id: "1", name: "전체미용", duration: 120, price: 50000 },
-  { id: "2", name: "목욕", duration: 60, price: 30000 },
-  { id: "3", name: "위생미용", duration: 40, price: 20000 },
-  { id: "4", name: "부분미용", duration: 60, price: 35000 },
-  { id: "5", name: "스파", duration: 90, price: 60000 },
-];
+interface Service {
+  id: string;
+  name: string;
+  duration: number;
+  price: number;
+}
 
 const timeSlots = [
   "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
@@ -19,6 +18,7 @@ const timeSlots = [
 
 export default function BookingPage() {
   const [step, setStep] = useState(1);
+  const [services, setServices] = useState<Service[]>([]);
   const [form, setForm] = useState({
     service: "",
     date: "",
@@ -29,14 +29,40 @@ export default function BookingPage() {
     breed: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/services")
+      .then((res) => res.json())
+      .then(setServices);
+  }, []);
 
   const selectedService = services.find((s) => s.id === form.service);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: API 호출
-    console.log("예약 요청:", form);
-    setSubmitted(true);
+    setSubmitting(true);
+
+    const res = await fetch("/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customerName: form.name,
+        customerPhone: form.phone,
+        petName: form.petName,
+        breed: form.breed,
+        serviceId: form.service,
+        date: form.date,
+        startTime: form.time,
+      }),
+    });
+
+    if (res.ok) {
+      setSubmitted(true);
+    } else {
+      alert("예약에 실패했습니다. 다시 시도해주세요.");
+    }
+    setSubmitting(false);
   };
 
   if (submitted) {
@@ -107,7 +133,6 @@ export default function BookingPage() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* Step 1: 서비스 선택 */}
         {step === 1 && (
           <div className="space-y-3">
             {services.map((s) => (
@@ -136,7 +161,6 @@ export default function BookingPage() {
           </div>
         )}
 
-        {/* Step 2: 날짜/시간 선택 */}
         {step === 2 && (
           <div className="space-y-4">
             <div>
@@ -192,7 +216,6 @@ export default function BookingPage() {
           </div>
         )}
 
-        {/* Step 3: 정보 입력 */}
         {step === 3 && (
           <div className="space-y-4">
             <div className="bg-indigo-50 rounded-xl p-3 text-sm">
@@ -264,9 +287,10 @@ export default function BookingPage() {
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-hover"
+                disabled={submitting}
+                className="flex-1 px-4 py-3 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-hover disabled:opacity-50"
               >
-                예약하기
+                {submitting ? "예약 중..." : "예약하기"}
               </button>
             </div>
           </div>

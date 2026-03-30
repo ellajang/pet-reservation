@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+
+interface Service {
+  id: string;
+  name: string;
+  duration: number;
+  price: number;
+}
 
 interface ReservationModalProps {
   onClose: () => void;
+  onSuccess: () => void;
 }
 
-export default function ReservationModal({ onClose }: ReservationModalProps) {
+export default function ReservationModal({ onClose, onSuccess }: ReservationModalProps) {
   const [form, setForm] = useState({
     customerName: "",
     customerPhone: "",
@@ -18,20 +26,33 @@ export default function ReservationModal({ onClose }: ReservationModalProps) {
     startTime: "",
     memo: "",
   });
+  const [services, setServices] = useState<Service[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
-  const services = [
-    { id: "1", name: "전체미용", duration: 120, price: 50000 },
-    { id: "2", name: "목욕", duration: 60, price: 30000 },
-    { id: "3", name: "위생미용", duration: 40, price: 20000 },
-    { id: "4", name: "부분미용", duration: 60, price: 35000 },
-    { id: "5", name: "스파", duration: 90, price: 60000 },
-  ];
+  useEffect(() => {
+    fetch("/api/services")
+      .then((res) => res.json())
+      .then(setServices);
+  }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Supabase에 저장
-    console.log("예약 등록:", form);
-    onClose();
+    setSubmitting(true);
+
+    const res = await fetch("/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    if (res.ok) {
+      onSuccess();
+      onClose();
+    } else {
+      const err = await res.json();
+      alert(err.error || "예약 등록에 실패했습니다");
+    }
+    setSubmitting(false);
   };
 
   return (
@@ -186,9 +207,10 @@ export default function ReservationModal({ onClose }: ReservationModalProps) {
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary-hover transition-colors"
+              disabled={submitting}
+              className="flex-1 px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
-              예약 등록
+              {submitting ? "등록 중..." : "예약 등록"}
             </button>
           </div>
         </form>
