@@ -129,6 +129,12 @@ export default function NotificationBell() {
     };
   }, [showBrowserNotification]);
 
+  const markAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
+
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
@@ -140,10 +146,7 @@ export default function NotificationBell() {
   return (
     <div className="relative">
       <button
-        onClick={() => {
-          setShowPanel(!showPanel);
-          if (!showPanel) markAllRead();
-        }}
+        onClick={() => setShowPanel(!showPanel)}
         className="relative p-2 hover:bg-gray-100 rounded-lg"
       >
         <Bell className="w-5 h-5 text-foreground" />
@@ -164,12 +167,22 @@ export default function NotificationBell() {
             <div className="flex items-center justify-between p-3 border-b border-border">
               <h4 className="font-semibold text-sm">알림</h4>
               {notifications.length > 0 && (
-                <button
-                  onClick={() => setNotifications([])}
-                  className="text-xs text-muted hover:text-foreground"
-                >
-                  모두 지우기
-                </button>
+                <div className="flex items-center gap-3">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllRead}
+                      className="text-xs text-primary hover:text-primary-hover font-medium"
+                    >
+                      모두 읽음
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setNotifications([])}
+                    className="text-xs text-muted hover:text-foreground"
+                  >
+                    모두 지우기
+                  </button>
+                </div>
               )}
             </div>
 
@@ -182,20 +195,33 @@ export default function NotificationBell() {
                 notifications.map((n) => (
                   <div
                     key={n.id}
-                    className={`p-3 border-b border-border last:border-none flex gap-2 ${
+                    className={`p-3 border-b border-border last:border-none ${
                       n.read ? "" : "bg-indigo-50/50"
                     }`}
                   >
-                    <div className="flex-1">
-                      <p className="text-sm">{n.message}</p>
-                      <p className="text-xs text-muted mt-1">{n.time}</p>
+                    <div className="flex gap-2">
+                      {!n.read && (
+                        <span className="w-2 h-2 bg-primary rounded-full mt-1.5 shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <p className="text-sm">{n.message}</p>
+                        <p className="text-xs text-muted mt-1">{n.time}</p>
+                        {!n.read && (
+                          <button
+                            onClick={() => markAsRead(n.id)}
+                            className="text-xs text-primary font-medium mt-1 hover:text-primary-hover"
+                          >
+                            확인
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => removeNotification(n.id)}
+                        className="p-1 hover:bg-gray-100 rounded self-start"
+                      >
+                        <X className="w-3 h-3 text-muted" />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => removeNotification(n.id)}
-                      className="p-1 hover:bg-gray-100 rounded self-start"
-                    >
-                      <X className="w-3 h-3 text-muted" />
-                    </button>
                   </div>
                 ))
               )}
