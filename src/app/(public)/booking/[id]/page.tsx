@@ -146,7 +146,8 @@ export default function BookingPage() {
     if (res.ok) {
       setSubmitted(true);
     } else {
-      alert("예약에 실패했습니다. 다시 시도해주세요.");
+      const err = await res.json();
+      alert(err.error || "예약에 실패했습니다. 다시 시도해주세요.");
     }
     setSubmitting(false);
   };

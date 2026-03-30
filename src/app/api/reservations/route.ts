@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       // 차단된 고객 체크
       if (existing.is_blocked) {
         return NextResponse.json(
-          { error: "예약이 제한된 고객입니다. 매장에 직접 문의해주세요." },
+          { error: "현재 온라인 예약이 어렵습니다. 카카오톡이나 전화로 문의해주세요." },
           { status: 403 }
         );
       }
