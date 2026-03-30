@@ -197,21 +197,30 @@ export default function BookingPage() {
       </p>
 
       {/* 단계 표시 */}
-      <div className="flex items-center gap-1 mb-6">
+      <div className="flex items-center mb-6">
         {Array.from({ length: totalSteps }, (_, i) => i + 1).map((s) => (
-          <div key={s} className="flex items-center gap-1 flex-1">
-            <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
-                displayStep >= s
-                  ? "bg-primary text-white"
-                  : "bg-gray-200 text-muted"
-              }`}
-            >
-              {s}
+          <div key={s} className="flex items-center flex-1 last:flex-none">
+            <div className="flex flex-col items-center">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
+                  displayStep >= s
+                    ? "bg-primary text-white"
+                    : "bg-gray-200 text-muted"
+                }`}
+              >
+                {displayStep > s ? "✓" : s}
+              </div>
+              <span className="text-xs text-muted mt-1 whitespace-nowrap">
+                {stepLabels[s - 1]}
+              </span>
             </div>
-            <span className="text-xs text-muted hidden sm:block">
-              {stepLabels[s - 1]}
-            </span>
+            {s < totalSteps && (
+              <div
+                className={`h-0.5 flex-1 mx-2 mb-5 ${
+                  displayStep > s ? "bg-primary" : "bg-gray-200"
+                }`}
+              />
+            )}
           </div>
         ))}
       </div>
