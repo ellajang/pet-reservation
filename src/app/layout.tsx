@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   description: "애견미용샵 예약/고객/매출 관리",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
