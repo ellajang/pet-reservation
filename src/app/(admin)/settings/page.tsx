@@ -83,10 +83,11 @@ export default function SettingsPage() {
     setSaving(false);
   };
 
-  const bookingUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/book/demo`
-      : "";
+  const [bookingUrl, setBookingUrl] = useState("");
+
+  useEffect(() => {
+    setBookingUrl(`${window.location.origin}/book/demo`);
+  }, []);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(bookingUrl);
