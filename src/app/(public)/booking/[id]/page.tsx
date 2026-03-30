@@ -8,7 +8,15 @@ interface Service {
   name: string;
   duration: number;
   price: number;
+  size_category: string;
 }
+
+const sizeCategoryLabel: Record<string, string> = {
+  small: "소형견",
+  medium: "중형견",
+  large: "대형견",
+  special: "특수견",
+};
 
 interface TimeSlot {
   time: string;
@@ -429,29 +437,46 @@ export default function BookingPage() {
             </div>
           )}
 
-          {services.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => {
-                setForm({ ...form, serviceId: s.id });
-                setStep(4);
-              }}
-              className={`w-full text-left p-4 rounded-xl border transition-colors ${
-                form.serviceId === s.id
-                  ? "border-primary bg-indigo-50"
-                  : "border-border bg-white hover:border-primary/30"
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium">{s.name}</p>
-                  <p className="text-sm text-muted">약 {s.duration}분</p>
+          {["small", "medium", "large", "special"].map((cat) => {
+            const catServices = services.filter(
+              (s) => (s.size_category || "small") === cat
+            );
+            if (catServices.length === 0) return null;
+            return (
+              <div key={cat}>
+                <h4 className="text-sm font-semibold text-muted mb-2">
+                  {sizeCategoryLabel[cat]}
+                </h4>
+                <div className="space-y-2 mb-4">
+                  {catServices.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => {
+                        setForm({ ...form, serviceId: s.id });
+                        setStep(4);
+                      }}
+                      className={`w-full text-left p-4 rounded-xl border transition-colors ${
+                        form.serviceId === s.id
+                          ? "border-primary bg-indigo-50"
+                          : "border-border bg-white hover:border-primary/30"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">{s.name}</p>
+                          <p className="text-sm text-muted">약 {s.duration}분</p>
+                        </div>
+                        <p className="font-semibold">
+                          ₩{s.price.toLocaleString()}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
                 </div>
-                <p className="font-semibold">₩{s.price.toLocaleString()}</p>
               </div>
-            </button>
-          ))}
+            );
+          })}
 
           <button
             type="button"

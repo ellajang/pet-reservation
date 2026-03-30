@@ -9,7 +9,22 @@ interface Service {
   duration: number;
   price: number;
   description: string | null;
+  size_category: string;
 }
+
+const sizeCategories = [
+  { value: "small", label: "소형견" },
+  { value: "medium", label: "중형견" },
+  { value: "large", label: "대형견" },
+  { value: "special", label: "특수견" },
+];
+
+const sizeCategoryLabel: Record<string, string> = {
+  small: "소형견",
+  medium: "중형견",
+  large: "대형견",
+  special: "특수견",
+};
 
 export default function SettingsPage() {
   const [shopName, setShopName] = useState("펫살롱");
@@ -31,6 +46,7 @@ export default function SettingsPage() {
     duration: "",
     price: "",
     description: "",
+    size_category: "small",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -99,7 +115,7 @@ export default function SettingsPage() {
 
   const openAddService = () => {
     setEditingService(null);
-    setServiceForm({ name: "", duration: "", price: "", description: "" });
+    setServiceForm({ name: "", duration: "", price: "", description: "", size_category: "small" });
     setShowServiceForm(true);
   };
 
@@ -110,6 +126,7 @@ export default function SettingsPage() {
       duration: String(service.duration),
       price: String(service.price),
       description: service.description || "",
+      size_category: service.size_category || "small",
     });
     setShowServiceForm(true);
   };
@@ -123,6 +140,7 @@ export default function SettingsPage() {
       duration: parseInt(serviceForm.duration),
       price: parseInt(serviceForm.price),
       description: serviceForm.description || null,
+      size_category: serviceForm.size_category,
     };
 
     if (editingService) {
@@ -174,36 +192,52 @@ export default function SettingsPage() {
               등록된 서비스가 없습니다. 서비스를 추가해주세요.
             </p>
           ) : (
-            <div className="space-y-2">
-              {services.map((service) => (
-                <div
-                  key={service.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-border"
-                >
-                  <div>
-                    <p className="font-medium">{service.name}</p>
-                    <p className="text-sm text-muted">
-                      {service.duration}분 · ₩
-                      {service.price.toLocaleString()}
-                      {service.description && ` · ${service.description}`}
-                    </p>
+            <div className="space-y-4">
+              {sizeCategories.map((cat) => {
+                const catServices = services.filter(
+                  (s) => (s.size_category || "small") === cat.value
+                );
+                if (catServices.length === 0) return null;
+                return (
+                  <div key={cat.value}>
+                    <h4 className="text-sm font-medium text-muted mb-2">
+                      {cat.label}
+                    </h4>
+                    <div className="space-y-2">
+                      {catServices.map((service) => (
+                        <div
+                          key={service.id}
+                          className="flex items-center justify-between p-3 rounded-lg border border-border"
+                        >
+                          <div>
+                            <p className="font-medium">{service.name}</p>
+                            <p className="text-sm text-muted">
+                              {service.duration}분 · ₩
+                              {service.price.toLocaleString()}
+                              {service.description &&
+                                ` · ${service.description}`}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => openEditService(service)}
+                              className="p-2 hover:bg-gray-100 rounded-lg text-muted hover:text-foreground"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteService(service.id)}
+                              className="p-2 hover:bg-red-50 rounded-lg text-muted hover:text-red-500"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => openEditService(service)}
-                      className="p-2 hover:bg-gray-100 rounded-lg text-muted hover:text-foreground"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteService(service.id)}
-                      className="p-2 hover:bg-red-50 rounded-lg text-muted hover:text-red-500"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -341,6 +375,33 @@ export default function SettingsPage() {
             </div>
 
             <form onSubmit={handleServiceSubmit} className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  견종 크기
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {sizeCategories.map((cat) => (
+                    <button
+                      key={cat.value}
+                      type="button"
+                      onClick={() =>
+                        setServiceForm({
+                          ...serviceForm,
+                          size_category: cat.value,
+                        })
+                      }
+                      className={`py-2 rounded-lg text-sm font-medium transition-colors ${
+                        serviceForm.size_category === cat.value
+                          ? "bg-primary text-white"
+                          : "bg-gray-50 border border-border hover:border-primary/30"
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-1">
                   서비스명
