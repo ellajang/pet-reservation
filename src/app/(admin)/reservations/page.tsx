@@ -10,6 +10,7 @@ import {
   Check,
   X,
   AlertTriangle,
+  Ban,
 } from "lucide-react";
 import {
   format,
@@ -37,12 +38,14 @@ interface ReservationItem {
   status: string;
   price: number;
   memo: string | null;
-  customers: { name: string; phone: string };
+  customer_id: string;
+  customers: { name: string; phone: string; is_blocked?: boolean };
   pets: { name: string; breed: string };
   services: { name: string };
 }
 
 const statusColors: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
   confirmed: "bg-blue-100 text-blue-800 border-blue-200",
   completed: "bg-green-100 text-green-800 border-green-200",
   cancelled: "bg-gray-100 text-gray-600 border-gray-200",
@@ -50,6 +53,7 @@ const statusColors: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
+  pending: "승인 대기",
   confirmed: "확정",
   completed: "완료",
   cancelled: "취소",
@@ -62,10 +66,12 @@ function ReservationCard({
   r,
   showDate,
   onUpdateStatus,
+  onBlockCustomer,
 }: {
   r: ReservationItem;
   showDate?: boolean;
   onUpdateStatus: (id: string, status: string) => void;
+  onBlockCustomer: (customerId: string, customerName: string) => void;
 }) {
   return (
     <div className={`p-3 rounded-lg border ${statusColors[r.status]}`}>
@@ -88,6 +94,31 @@ function ReservationCard({
       </div>
       <div className="text-xs mt-1">₩{r.price.toLocaleString()}</div>
 
+      {/* 승인 대기 상태 - 승인/거절 */}
+      {r.status === "pending" && (
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={() => onUpdateStatus(r.id, "confirmed")}
+            className="flex items-center gap-1 text-xs bg-primary text-white px-2 py-1 rounded"
+          >
+            <Check className="w-3 h-3" /> 승인
+          </button>
+          <button
+            onClick={() => onUpdateStatus(r.id, "cancelled")}
+            className="flex items-center gap-1 text-xs bg-gray-400 text-white px-2 py-1 rounded"
+          >
+            <X className="w-3 h-3" /> 거절
+          </button>
+          <button
+            onClick={() => onBlockCustomer(r.customer_id, r.customers?.name)}
+            className="flex items-center gap-1 text-xs bg-red-600 text-white px-2 py-1 rounded"
+          >
+            <Ban className="w-3 h-3" /> 차단
+          </button>
+        </div>
+      )}
+
+      {/* 확정 상태 - 완료/노쇼/취소 */}
       {r.status === "confirmed" && (
         <div className="flex gap-2 mt-2">
           <button
@@ -177,6 +208,32 @@ export default function ReservationsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
+    fetchReservations();
+  };
+
+  const blockCustomer = async (customerId: string, customerName: string) => {
+    const reason = prompt(`${customerName}님을 차단하시겠습니까?\n차단 사유를 입력하세요:`);
+    if (reason === null) return; // 취소
+
+    await fetch(`/api/customers/${customerId}/block`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ blocked: true, reason }),
+    });
+
+    // 해당 고객의 대기 중인 예약 모두 취소
+    const pendingRes = reservations.filter(
+      (r) => r.customer_id === customerId && r.status === "pending"
+    );
+    for (const r of pendingRes) {
+      await fetch(`/api/reservations/${r.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelled" }),
+      });
+    }
+
+    alert(`${customerName}님이 차단되었습니다. 앞으로 예약이 불가합니다.`);
     fetchReservations();
   };
 
@@ -305,6 +362,7 @@ export default function ReservationsPage() {
                     key={r.id}
                     r={r}
                     onUpdateStatus={updateStatus}
+                    onBlockCustomer={blockCustomer}
                   />
                 ))
               )}
@@ -404,6 +462,7 @@ export default function ReservationsPage() {
                       r={r}
                       showDate
                       onUpdateStatus={updateStatus}
+                      onBlockCustomer={blockCustomer}
                     />
                   ))}
               </div>
@@ -538,6 +597,7 @@ export default function ReservationsPage() {
                     r={r}
                     showDate
                     onUpdateStatus={updateStatus}
+                    onBlockCustomer={blockCustomer}
                   />
                 ))}
               </div>

@@ -40,11 +40,18 @@ export async function POST(request: NextRequest) {
     // 전화번호로 기존 고객 검색
     const { data: existing } = await supabase
       .from("customers")
-      .select("id")
+      .select("id, is_blocked")
       .eq("phone", body.customerPhone)
       .single();
 
     if (existing) {
+      // 차단된 고객 체크
+      if (existing.is_blocked) {
+        return NextResponse.json(
+          { error: "예약이 제한된 고객입니다. 매장에 직접 문의해주세요." },
+          { status: 403 }
+        );
+      }
       customerId = existing.id;
     } else {
       // 신규 고객 등록
@@ -118,7 +125,7 @@ export async function POST(request: NextRequest) {
       end_time: endTime,
       price: service.price,
       memo: body.memo || null,
-      status: "confirmed",
+      status: "pending",
     })
     .select(`
       *,

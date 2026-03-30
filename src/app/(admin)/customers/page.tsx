@@ -8,6 +8,8 @@ interface CustomerData {
   name: string;
   phone: string;
   no_show_count: number;
+  is_blocked: boolean;
+  block_reason: string | null;
   created_at: string;
   pets: { id: string; name: string; breed: string; weight: number | null }[];
 }
@@ -126,6 +128,11 @@ export default function CustomersPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="font-semibold text-lg">{customer.name}</h3>
+                    {customer.is_blocked && (
+                      <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">
+                        차단됨
+                      </span>
+                    )}
                     {customer.no_show_count > 0 && (
                       <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
                         노쇼 {customer.no_show_count}회
@@ -148,7 +155,36 @@ export default function CustomersPage() {
                     )}
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted" />
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    const newBlocked = !customer.is_blocked;
+                    if (newBlocked) {
+                      const reason = prompt(`${customer.name}님을 차단하시겠습니까?\n차단 사유:`);
+                      if (reason === null) return;
+                      await fetch(`/api/customers/${customer.id}/block`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ blocked: true, reason }),
+                      });
+                    } else {
+                      if (!confirm(`${customer.name}님의 차단을 해제하시겠습니까?`)) return;
+                      await fetch(`/api/customers/${customer.id}/block`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ blocked: false, reason: null }),
+                      });
+                    }
+                    fetchCustomers();
+                  }}
+                  className={`text-xs px-3 py-1.5 rounded-lg font-medium ${
+                    customer.is_blocked
+                      ? "bg-gray-100 text-foreground hover:bg-gray-200"
+                      : "bg-red-50 text-red-600 hover:bg-red-100"
+                  }`}
+                >
+                  {customer.is_blocked ? "차단 해제" : "차단"}
+                </button>
               </div>
             </div>
           ))
