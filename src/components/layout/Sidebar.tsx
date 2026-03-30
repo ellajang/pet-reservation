@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -21,13 +22,22 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [shopName, setShopName] = useState("펫살롱");
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.shop_name) setShopName(data.shop_name);
+      });
+  }, []);
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-border flex flex-col">
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-2">
           <Scissors className="w-6 h-6 text-primary" />
-          <h1 className="text-xl font-bold text-foreground">펫살롱</h1>
+          <h1 className="text-xl font-bold text-foreground">{shopName}</h1>
         </div>
         <p className="text-sm text-muted mt-1">예약 관리 시스템</p>
       </div>
