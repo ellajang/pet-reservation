@@ -90,6 +90,22 @@ export async function POST(request: NextRequest) {
   const totalMin = startHour * 60 + startMin + service.duration;
   const endTime = `${Math.floor(totalMin / 60).toString().padStart(2, "0")}:${(totalMin % 60).toString().padStart(2, "0")}`;
 
+  // 시간 충돌 체크 (DB 트리거와 별도로 API 레벨에서도 체크)
+  const { data: conflicts } = await supabase
+    .from("reservations")
+    .select("id")
+    .eq("date", body.date)
+    .not("status", "eq", "cancelled")
+    .lt("start_time", endTime)
+    .gt("end_time", body.startTime);
+
+  if (conflicts && conflicts.length > 0) {
+    return NextResponse.json(
+      { error: "해당 시간대에 이미 예약이 있습니다. 다른 시간을 선택해주세요." },
+      { status: 409 }
+    );
+  }
+
   // 예약 등록
   const { data: reservation, error } = await supabase
     .from("reservations")

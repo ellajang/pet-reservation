@@ -10,6 +10,11 @@ interface Service {
   price: number;
 }
 
+interface TimeSlot {
+  time: string;
+  available: boolean;
+}
+
 interface ExistingPet {
   id: string;
   name: string;
@@ -23,7 +28,7 @@ interface ExistingCustomer {
   pets: ExistingPet[];
 }
 
-const timeSlots = [
+const DEFAULT_SLOTS = [
   "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
   "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
   "16:00", "16:30", "17:00",
@@ -56,6 +61,10 @@ export default function BookingPage() {
 
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(
+    DEFAULT_SLOTS.map((t) => ({ time: t, available: true }))
+  );
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   useEffect(() => {
     fetch("/api/services")
@@ -64,6 +73,16 @@ export default function BookingPage() {
   }, []);
 
   const selectedService = services.find((s) => s.id === form.serviceId);
+
+  // 날짜 변경 시 예약 가능 시간 조회
+  useEffect(() => {
+    if (!form.date || !selectedService) return;
+    setLoadingSlots(true);
+    fetch(`/api/reservations/available?date=${form.date}&duration=${selectedService.duration}`)
+      .then((res) => res.json())
+      .then(setTimeSlots)
+      .finally(() => setLoadingSlots(false));
+  }, [form.date, selectedService]);
 
   // 1단계: 연락처로 기존 고객 확인
   const handleCheckPhone = async (e: React.FormEvent) => {
@@ -473,25 +492,40 @@ export default function BookingPage() {
                 <Clock className="w-4 h-4 inline mr-1" />
                 시간 선택
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                {timeSlots.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => {
-                      setForm({ ...form, time: t });
-                      setStep(5);
-                    }}
-                    className={`py-3 rounded-lg text-sm font-medium transition-colors ${
-                      form.time === t
-                        ? "bg-primary text-white"
-                        : "bg-white border border-border hover:border-primary/30"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
+              {loadingSlots ? (
+                <p className="text-muted text-center py-4 text-sm">
+                  예약 가능 시간 확인 중...
+                </p>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {timeSlots.map((slot) => (
+                    <button
+                      key={slot.time}
+                      type="button"
+                      disabled={!slot.available}
+                      onClick={() => {
+                        if (!slot.available) return;
+                        setForm({ ...form, time: slot.time });
+                        setStep(5);
+                      }}
+                      className={`py-3 rounded-lg text-sm font-medium transition-colors ${
+                        !slot.available
+                          ? "bg-gray-100 text-gray-300 cursor-not-allowed line-through"
+                          : form.time === slot.time
+                          ? "bg-primary text-white"
+                          : "bg-white border border-border hover:border-primary/30"
+                      }`}
+                    >
+                      {slot.time}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {timeSlots.every((s) => !s.available) && !loadingSlots && (
+                <p className="text-red-500 text-center text-sm mt-2">
+                  이 날짜는 예약이 모두 찼습니다. 다른 날짜를 선택해주세요.
+                </p>
+              )}
             </div>
           )}
 
