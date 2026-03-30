@@ -17,8 +17,10 @@ export default function SettingsPage() {
     start: "09:00",
     end: "18:00",
   });
-  const [closedDays, setClosedDays] = useState([0]);
+  const [closedDays, setClosedDays] = useState<number[]>([0]);
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
 
   // 서비스 관리
   const [services, setServices] = useState<Service[]>([]);
@@ -38,9 +40,48 @@ export default function SettingsPage() {
       .then(setServices);
   }, []);
 
+  // 설정 불러오기
+  const fetchSettings = useCallback(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && !data.error) {
+          setShopName(data.shop_name || "펫살롱");
+          setBusinessHours({
+            start: data.business_hours_start?.slice(0, 5) || "09:00",
+            end: data.business_hours_end?.slice(0, 5) || "18:00",
+          });
+          setClosedDays(data.closed_days || [0]);
+        }
+      });
+  }, []);
+
   useEffect(() => {
     fetchServices();
-  }, [fetchServices]);
+    fetchSettings();
+  }, [fetchServices, fetchSettings]);
+
+  const handleSaveSettings = async () => {
+    setSaving(true);
+    const res = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        shopName,
+        businessHoursStart: businessHours.start,
+        businessHoursEnd: businessHours.end,
+        closedDays,
+      }),
+    });
+
+    if (res.ok) {
+      setSaveMessage("저장되었습니다!");
+      setTimeout(() => setSaveMessage(""), 2000);
+    } else {
+      setSaveMessage("저장에 실패했습니다");
+    }
+    setSaving(false);
+  };
 
   const bookingUrl =
     typeof window !== "undefined"
@@ -265,10 +306,21 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <button className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-hover transition-colors">
-          <Save className="w-4 h-4" />
-          설정 저장
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleSaveSettings}
+            disabled={saving}
+            className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            {saving ? "저장 중..." : "설정 저장"}
+          </button>
+          {saveMessage && (
+            <span className="text-sm text-green-600 font-medium">
+              {saveMessage}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* 서비스 추가/수정 모달 */}
