@@ -86,7 +86,7 @@ export default function SettingsPage() {
   const [bookingUrl, setBookingUrl] = useState("");
 
   useEffect(() => {
-    setBookingUrl(`${window.location.origin}/book/demo`);
+    setBookingUrl(`${window.location.origin}/booking`);
   }, []);
 
   const handleCopyLink = () => {
