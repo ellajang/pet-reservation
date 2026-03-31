@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 export async function GET() {
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const today = now.toISOString().split("T")[0];
   const monthStart = today.slice(0, 7) + "-01";
-  const monthEnd = today.slice(0, 7) + "-31";
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const monthEnd = `${today.slice(0, 7)}-${String(lastDay).padStart(2, "0")}`;
 
   const [todayRes, customersRes, monthSalesRes, noshowRes, pendingRes] = await Promise.all([
     // 오늘 예약

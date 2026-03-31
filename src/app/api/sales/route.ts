@@ -17,9 +17,11 @@ export async function GET(request: NextRequest) {
     .order("date", { ascending: false });
 
   if (month) {
+    const [year, mon] = month.split("-").map(Number);
+    const lastDay = new Date(year, mon, 0).getDate();
     query = query
       .gte("date", `${month}-01`)
-      .lte("date", `${month}-31`);
+      .lte("date", `${month}-${String(lastDay).padStart(2, "0")}`);
   }
 
   const { data, error } = await query;
