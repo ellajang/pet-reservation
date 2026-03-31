@@ -313,16 +313,18 @@ export default function ReservationsPage() {
               <div className="grid grid-cols-7 gap-1">
                 {days.map((d, i) => {
                   const dateStr = format(d, "yyyy-MM-dd");
-                  const dayCount = reservations.filter(
+                  const dayItems = reservations.filter(
                     (r) => r.date === dateStr && r.status !== "cancelled"
-                  ).length;
+                  );
+                  const dayCount = dayItems.length;
+                  const hasPending = dayItems.some((r) => r.status === "pending");
                   const isSelected = isSameDay(d, selectedDate);
 
                   return (
                     <button
                       key={i}
                       onClick={() => setSelectedDate(d)}
-                      className={`relative p-2 h-12 rounded-lg text-sm transition-colors ${
+                      className={`relative p-2 h-14 rounded-lg text-sm transition-colors ${
                         !isSameMonth(d, currentMonth)
                           ? "text-gray-300"
                           : isSelected
@@ -333,8 +335,18 @@ export default function ReservationsPage() {
                       }`}
                     >
                       {format(d, "d")}
-                      {dayCount > 0 && !isSelected && (
-                        <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full" />
+                      {dayCount > 0 && (
+                        <span
+                          className={`absolute bottom-1 left-1/2 -translate-x-1/2 min-w-[18px] h-[18px] text-[10px] font-bold rounded-full flex items-center justify-center ${
+                            isSelected
+                              ? "bg-white text-primary"
+                              : hasPending
+                              ? "bg-yellow-400 text-yellow-900"
+                              : "bg-primary text-white"
+                          }`}
+                        >
+                          {dayCount}
+                        </span>
                       )}
                     </button>
                   );
