@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
 import {
   Calendar,
   Users,
@@ -13,6 +13,12 @@ import {
   Dog,
   Phone,
 } from "lucide-react";
+import {
+  useDashboard,
+  useAutoComplete,
+  useUpdateReservationStatus,
+} from "@/lib/queries";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Reservation {
   id: string;
@@ -52,40 +58,28 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading: loading } = useDashboard() as {
+    data: DashboardData | undefined;
+    isLoading: boolean;
+  };
+  const autoComplete = useAutoComplete();
+  const updateStatus = useUpdateReservationStatus();
+  const queryClient = useQueryClient();
 
-  const fetchData = useCallback(() => {
-    // 시간 지난 예약 자동 완료 처리 후 대시보드 데이터 로드
-    fetch("/api/reservations/auto-complete", { method: "POST" })
-      .finally(() => {
-        fetch("/api/dashboard")
-          .then((res) => res.json())
-          .then(setData)
-          .finally(() => setLoading(false));
-      });
+  // 페이지 로드 시 자동 완료 처리
+  useEffect(() => {
+    autoComplete.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const updateStatus = async (id: string, status: string) => {
-    const res = await fetch(`/api/reservations/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error || "상태 변경에 실패했습니다");
-      return;
-    }
-    fetchData();
+  const handleUpdateStatus = (id: string, status: string) => {
+    updateStatus.mutate({ id, status });
   };
 
   const blockCustomer = async (customerId: string, customerName: string) => {
-    const reason = prompt(`${customerName}님을 차단하시겠습니까?\n차단 사유를 입력하세요:`);
+    const reason = prompt(
+      `${customerName}님을 차단하시겠습니까?\n차단 사유를 입력하세요:`
+    );
     if (reason === null) return;
 
     await fetch(`/api/customers/${customerId}/block`, {
@@ -94,10 +88,10 @@ export default function DashboardPage() {
       body: JSON.stringify({ blocked: true, reason }),
     });
 
-    // 대기 중인 예약 모두 취소
-    const pending = data?.pendingReservations.filter(
-      (r) => r.customer_id === customerId
-    ) || [];
+    const pending =
+      data?.pendingReservations.filter(
+        (r) => r.customer_id === customerId
+      ) || [];
     for (const r of pending) {
       await fetch(`/api/reservations/${r.id}`, {
         method: "PATCH",
@@ -107,10 +101,10 @@ export default function DashboardPage() {
     }
 
     alert(`${customerName}님이 차단되었습니다.`);
-    fetchData();
+    queryClient.invalidateQueries({ queryKey: ["dashboard"] });
   };
 
-  const pendingCount = data?.pendingReservations.length || 0;
+  const pendingCount = data?.pendingReservations?.length || 0;
 
   const stats = [
     {
@@ -122,7 +116,7 @@ export default function DashboardPage() {
     },
     {
       label: "오늘 예약",
-      value: loading ? "-" : `${data?.todayReservations.length || 0}건`,
+      value: loading ? "-" : `${data?.todayReservations?.length || 0}건`,
       icon: Calendar,
       color: "text-primary",
       bg: "bg-indigo-50",
@@ -171,7 +165,6 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* 승인 대기 예약 */}
       {pendingCount > 0 && (
         <div className="bg-white rounded-xl border-2 border-yellow-300 shadow-sm mb-6">
           <div className="p-6 border-b border-yellow-200 bg-yellow-50/50 rounded-t-xl">
@@ -186,7 +179,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="divide-y divide-border">
-            {data?.pendingReservations.map((r) => (
+            {data?.pendingReservations?.map((r) => (
               <div key={r.id} className="p-5">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
@@ -229,13 +222,13 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex gap-2 mt-3">
                   <button
-                    onClick={() => updateStatus(r.id, "confirmed")}
+                    onClick={() => handleUpdateStatus(r.id, "confirmed")}
                     className="flex items-center gap-1 text-sm bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors"
                   >
                     <Check className="w-4 h-4" /> 승인
                   </button>
                   <button
-                    onClick={() => updateStatus(r.id, "cancelled")}
+                    onClick={() => handleUpdateStatus(r.id, "cancelled")}
                     className="flex items-center gap-1 text-sm bg-gray-100 text-foreground px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     <X className="w-4 h-4" /> 거절
@@ -255,7 +248,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 오늘의 예약 */}
       <div className="bg-white rounded-xl border border-border shadow-sm">
         <div className="p-6 border-b border-border">
           <h3 className="text-lg font-semibold">오늘의 예약</h3>
@@ -263,7 +255,7 @@ export default function DashboardPage() {
         <div className="p-6">
           {loading ? (
             <p className="text-muted text-center py-8">불러오는 중...</p>
-          ) : !data?.todayReservations.length ? (
+          ) : !data?.todayReservations?.length ? (
             <p className="text-muted text-center py-8">
               오늘 예약이 없습니다.
             </p>

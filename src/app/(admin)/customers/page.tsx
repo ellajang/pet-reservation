@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, Phone, Dog } from "lucide-react";
 import CustomerDetailModal from "@/components/customer/CustomerDetailModal";
+import { useCustomers, useCreateCustomer } from "@/lib/queries";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CustomerData {
   id: string;
@@ -17,11 +19,9 @@ interface CustomerData {
 
 export default function CustomersPage() {
   const [search, setSearch] = useState("");
-  const [customers, setCustomers] = useState<CustomerData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [newCustomer, setNewCustomer] = useState({
     name: "",
     phone: "",
@@ -33,27 +33,24 @@ export default function CustomersPage() {
     specialNotes: "",
   });
 
-  const fetchCustomers = useCallback(() => {
-    setLoading(true);
-    fetch(`/api/customers?search=${encodeURIComponent(search)}`)
-      .then((res) => res.json())
-      .then(setCustomers)
-      .finally(() => setLoading(false));
-  }, [search]);
+  const queryClient = useQueryClient();
+  const { data: customers = [], isLoading: loading } = useCustomers(debouncedSearch) as {
+    data: CustomerData[];
+    isLoading: boolean;
+  };
+  const createCustomer = useCreateCustomer();
 
+  // 검색 디바운스
   useEffect(() => {
-    const timer = setTimeout(fetchCustomers, 300);
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(timer);
-  }, [fetchCustomers]);
+  }, [search]);
 
   const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
 
-    const res = await fetch("/api/customers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    createCustomer.mutate(
+      {
         customer: {
           name: newCustomer.name,
           phone: newCustomer.phone,
@@ -66,27 +63,26 @@ export default function CustomersPage() {
           neutered: newCustomer.neutered,
           specialNotes: newCustomer.specialNotes,
         },
-      }),
-    });
-
-    if (res.ok) {
-      setShowAddForm(false);
-      setNewCustomer({
-        name: "",
-        phone: "",
-        petName: "",
-        breed: "",
-        weight: "",
-        gender: "male",
-        neutered: false,
-        specialNotes: "",
-      });
-      fetchCustomers();
-    } else {
-      const err = await res.json();
-      alert(err.error || "고객 등록에 실패했습니다");
-    }
-    setSubmitting(false);
+      },
+      {
+        onSuccess: () => {
+          setShowAddForm(false);
+          setNewCustomer({
+            name: "",
+            phone: "",
+            petName: "",
+            breed: "",
+            weight: "",
+            gender: "male",
+            neutered: false,
+            specialNotes: "",
+          });
+        },
+        onError: (err: Error) => {
+          alert(err.message || "고객 등록에 실패했습니다");
+        },
+      }
+    );
   };
 
   return (
@@ -178,7 +174,7 @@ export default function CustomersPage() {
                         body: JSON.stringify({ blocked: false, reason: null }),
                       });
                     }
-                    fetchCustomers();
+                    queryClient.invalidateQueries({ queryKey: ["customers"] });
                   }}
                   className={`text-xs px-3 py-1.5 rounded-lg font-medium ${
                     customer.is_blocked
@@ -332,10 +328,10 @@ export default function CustomersPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={createCustomer.isPending}
                   className="flex-1 px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary-hover disabled:opacity-50"
                 >
-                  {submitting ? "등록 중..." : "등록"}
+                  {createCustomer.isPending ? "등록 중..." : "등록"}
                 </button>
               </div>
             </form>
@@ -347,7 +343,7 @@ export default function CustomersPage() {
         <CustomerDetailModal
           customerId={selectedCustomerId}
           onClose={() => setSelectedCustomerId(null)}
-          onUpdated={fetchCustomers}
+          onUpdated={() => queryClient.invalidateQueries({ queryKey: ["customers"] })}
         />
       )}
     </div>

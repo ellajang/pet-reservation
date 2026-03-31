@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCustomerAnalytics } from "@/lib/queries";
 import {
   Users,
   RefreshCw,
@@ -55,15 +55,10 @@ const COLORS = [
 ];
 
 export default function CustomerAnalyticsPage() {
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/customers/analytics")
-      .then((res) => res.json())
-      .then(setData)
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, isLoading: loading } = useCustomerAnalytics() as {
+    data: AnalyticsData | undefined;
+    isLoading: boolean;
+  };
 
   if (loading) {
     return (

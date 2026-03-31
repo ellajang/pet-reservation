@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
+import { useSales } from "@/lib/queries";
 
 interface SalesItem {
   id: string;
@@ -14,17 +15,11 @@ interface SalesItem {
 }
 
 export default function SalesPage() {
-  const [sales, setSales] = useState<SalesItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(format(new Date(), "yyyy-MM"));
-
-  useEffect(() => {
-    setLoading(true);
-    fetch(`/api/sales?month=${month}`)
-      .then((res) => res.json())
-      .then(setSales)
-      .finally(() => setLoading(false));
-  }, [month]);
+  const { data: sales = [], isLoading: loading } = useSales(month) as {
+    data: SalesItem[];
+    isLoading: boolean;
+  };
 
   const totalAmount = sales.reduce((sum, s) => sum + s.price, 0);
   const avgAmount = sales.length > 0 ? Math.round(totalAmount / sales.length) : 0;
