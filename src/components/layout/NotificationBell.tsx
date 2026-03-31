@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Bell, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -12,6 +13,7 @@ interface Notification {
 }
 
 export default function NotificationBell() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showPanel, setShowPanel] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState(false);
@@ -208,7 +210,11 @@ export default function NotificationBell() {
                         <p className="text-xs text-muted mt-1">{n.time}</p>
                         {!n.read && (
                           <button
-                            onClick={() => markAsRead(n.id)}
+                            onClick={() => {
+                              markAsRead(n.id);
+                              setShowPanel(false);
+                              router.push("/dashboard");
+                            }}
                             className="text-xs text-primary font-medium mt-1 hover:text-primary-hover"
                           >
                             확인
