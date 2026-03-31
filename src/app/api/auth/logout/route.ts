@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function POST() {
-  const cookieStore = await cookies();
-  cookieStore.delete("admin_token");
-
-  return NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true });
+  response.cookies.delete("sb-access-token");
+  response.cookies.delete("sb-refresh-token");
+  return response;
 }

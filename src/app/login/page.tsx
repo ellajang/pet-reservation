@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Scissors, LogIn } from "lucide-react";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function LoginPage() {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (res.ok) {
@@ -47,11 +47,12 @@ export default function LoginPage() {
           className="bg-white rounded-xl border border-border shadow-sm p-6 space-y-4"
         >
           <div>
-            <label className="block text-sm font-medium mb-1">아이디</label>
+            <label className="block text-sm font-medium mb-1">이메일</label>
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="example@email.com"
               className="w-full border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               required
             />
