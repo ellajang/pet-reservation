@@ -30,9 +30,6 @@ CREATE TRIGGER check_reservation_overlap_trigger
   BEFORE INSERT OR UPDATE ON reservations
   FOR EACH ROW EXECUTE FUNCTION check_reservation_overlap();
 
--- 4. Supabase Realtime 활성화
-ALTER PUBLICATION supabase_realtime ADD TABLE reservations;
-
 -- 5. 고객 차단 + 예약 승인 대기 상태
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN DEFAULT false;
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS block_reason TEXT;

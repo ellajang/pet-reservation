@@ -161,7 +161,7 @@ export default function ReservationsPage() {
     setLoading(true);
     fetch(`/api/reservations?month=${month}`)
       .then((res) => res.json())
-      .then(setReservations)
+      .then((data) => setReservations(Array.isArray(data) ? data : []))
       .finally(() => setLoading(false));
   }, [currentMonth]);
 
