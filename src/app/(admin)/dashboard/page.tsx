@@ -1,42 +1,121 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Calendar,
   Users,
   DollarSign,
-  AlertTriangle,
   Clock,
   User,
+  Check,
+  X,
+  Ban,
+  Dog,
+  Phone,
 } from "lucide-react";
 
+interface Reservation {
+  id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  price: number;
+  customer_id: string;
+  customers: { name: string; phone: string };
+  pets: { name: string; breed: string };
+  services: { name: string };
+}
+
 interface DashboardData {
-  todayReservations: Array<{
-    id: string;
-    start_time: string;
-    end_time: string;
-    status: string;
-    customers: { name: string };
-    pets: { name: string };
-    services: { name: string };
-  }>;
+  todayReservations: Reservation[];
+  pendingReservations: Reservation[];
   totalCustomers: number;
   monthlyRevenue: number;
   monthlyNoshow: number;
 }
 
+const statusColors: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-800",
+  confirmed: "bg-blue-100 text-blue-800",
+  completed: "bg-green-100 text-green-800",
+  cancelled: "bg-gray-100 text-gray-600",
+  noshow: "bg-red-100 text-red-800",
+};
+
+const statusLabels: Record<string, string> = {
+  pending: "승인 대기",
+  confirmed: "확정",
+  completed: "완료",
+  cancelled: "취소",
+  noshow: "노쇼",
+};
+
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     fetch("/api/dashboard")
       .then((res) => res.json())
       .then(setData)
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const updateStatus = async (id: string, status: string) => {
+    const res = await fetch(`/api/reservations/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error || "상태 변경에 실패했습니다");
+      return;
+    }
+    fetchData();
+  };
+
+  const blockCustomer = async (customerId: string, customerName: string) => {
+    const reason = prompt(`${customerName}님을 차단하시겠습니까?\n차단 사유를 입력하세요:`);
+    if (reason === null) return;
+
+    await fetch(`/api/customers/${customerId}/block`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ blocked: true, reason }),
+    });
+
+    // 대기 중인 예약 모두 취소
+    const pending = data?.pendingReservations.filter(
+      (r) => r.customer_id === customerId
+    ) || [];
+    for (const r of pending) {
+      await fetch(`/api/reservations/${r.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelled" }),
+      });
+    }
+
+    alert(`${customerName}님이 차단되었습니다.`);
+    fetchData();
+  };
+
+  const pendingCount = data?.pendingReservations.length || 0;
+
   const stats = [
+    {
+      label: "승인 대기",
+      value: loading ? "-" : `${pendingCount}건`,
+      icon: Clock,
+      color: pendingCount > 0 ? "text-yellow-600" : "text-muted",
+      bg: pendingCount > 0 ? "bg-yellow-50" : "bg-gray-50",
+    },
     {
       label: "오늘 예약",
       value: loading ? "-" : `${data?.todayReservations.length || 0}건`,
@@ -60,28 +139,7 @@ export default function DashboardPage() {
       color: "text-amber-600",
       bg: "bg-amber-50",
     },
-    {
-      label: "이번 달 노쇼",
-      value: loading ? "-" : `${data?.monthlyNoshow || 0}건`,
-      icon: AlertTriangle,
-      color: "text-red-500",
-      bg: "bg-red-50",
-    },
   ];
-
-  const statusColors: Record<string, string> = {
-    confirmed: "bg-blue-100 text-blue-800",
-    completed: "bg-green-100 text-green-800",
-    cancelled: "bg-gray-100 text-gray-600",
-    noshow: "bg-red-100 text-red-800",
-  };
-
-  const statusLabels: Record<string, string> = {
-    confirmed: "확정",
-    completed: "완료",
-    cancelled: "취소",
-    noshow: "노쇼",
-  };
 
   return (
     <div>
@@ -109,6 +167,91 @@ export default function DashboardPage() {
         })}
       </div>
 
+      {/* 승인 대기 예약 */}
+      {pendingCount > 0 && (
+        <div className="bg-white rounded-xl border-2 border-yellow-300 shadow-sm mb-6">
+          <div className="p-6 border-b border-yellow-200 bg-yellow-50/50 rounded-t-xl">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 bg-yellow-500 rounded-full animate-pulse" />
+              <h3 className="text-lg font-semibold">
+                승인 대기 중인 예약 ({pendingCount}건)
+              </h3>
+            </div>
+            <p className="text-sm text-muted mt-1">
+              새로 들어온 예약을 확인하고 승인 또는 거절해주세요
+            </p>
+          </div>
+          <div className="divide-y divide-border">
+            {data?.pendingReservations.map((r) => (
+              <div key={r.id} className="p-5">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-medium">
+                        승인 대기
+                      </span>
+                      <span className="text-sm font-medium">
+                        {r.services?.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="flex items-center gap-1 text-muted">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {r.date}
+                      </span>
+                      <span className="flex items-center gap-1 text-muted">
+                        <Clock className="w-3.5 h-3.5" />
+                        {r.start_time.slice(0, 5)} - {r.end_time.slice(0, 5)}
+                      </span>
+                      <span className="font-medium">
+                        ₩{r.price.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="flex items-center gap-1">
+                        <User className="w-3.5 h-3.5 text-muted" />
+                        {r.customers?.name}
+                      </span>
+                      <span className="flex items-center gap-1 text-muted">
+                        <Phone className="w-3.5 h-3.5" />
+                        {r.customers?.phone}
+                      </span>
+                      <span className="flex items-center gap-1 text-muted">
+                        <Dog className="w-3.5 h-3.5" />
+                        {r.pets?.name} ({r.pets?.breed})
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => updateStatus(r.id, "confirmed")}
+                    className="flex items-center gap-1 text-sm bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors"
+                  >
+                    <Check className="w-4 h-4" /> 승인
+                  </button>
+                  <button
+                    onClick={() => updateStatus(r.id, "cancelled")}
+                    className="flex items-center gap-1 text-sm bg-gray-100 text-foreground px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    <X className="w-4 h-4" /> 거절
+                  </button>
+                  <button
+                    onClick={() =>
+                      blockCustomer(r.customer_id, r.customers?.name)
+                    }
+                    className="flex items-center gap-1 text-sm bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 transition-colors"
+                  >
+                    <Ban className="w-4 h-4" /> 차단
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 오늘의 예약 */}
       <div className="bg-white rounded-xl border border-border shadow-sm">
         <div className="p-6 border-b border-border">
           <h3 className="text-lg font-semibold">오늘의 예약</h3>

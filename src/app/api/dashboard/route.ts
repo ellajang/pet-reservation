@@ -6,7 +6,7 @@ export async function GET() {
   const monthStart = today.slice(0, 7) + "-01";
   const monthEnd = today.slice(0, 7) + "-31";
 
-  const [todayRes, customersRes, monthSalesRes, noshowRes] = await Promise.all([
+  const [todayRes, customersRes, monthSalesRes, noshowRes, pendingRes] = await Promise.all([
     // 오늘 예약
     supabase
       .from("reservations")
@@ -32,6 +32,12 @@ export async function GET() {
       .eq("status", "noshow")
       .gte("date", monthStart)
       .lte("date", monthEnd),
+    // 승인 대기 예약
+    supabase
+      .from("reservations")
+      .select(`*, customers (*), pets (*), services (*)`)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false }),
   ]);
 
   const monthlyRevenue = (monthSalesRes.data || []).reduce(
@@ -41,6 +47,7 @@ export async function GET() {
 
   return NextResponse.json({
     todayReservations: todayRes.data || [],
+    pendingReservations: pendingRes.data || [],
     totalCustomers: customersRes.count || 0,
     monthlyRevenue,
     monthlyNoshow: noshowRes.count || 0,
