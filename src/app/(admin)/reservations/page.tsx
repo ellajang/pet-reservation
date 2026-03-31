@@ -78,9 +78,14 @@ function ReservationCard({
         <select
           value={r.status}
           onChange={(e) => {
-            if (e.target.value !== r.status) {
-              onUpdateStatus(r.id, e.target.value);
+            const newStatus = e.target.value;
+            if (newStatus === r.status) return;
+            const label = statusOptions.find((o) => o.value === newStatus)?.label;
+            if (!confirm(`상태를 "${label}"(으)로 변경하시겠습니까?`)) {
+              e.target.value = r.status;
+              return;
             }
+            onUpdateStatus(r.id, newStatus);
           }}
           className="text-xs font-medium bg-transparent border border-current/20 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none"
         >
