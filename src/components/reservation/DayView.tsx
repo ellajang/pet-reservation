@@ -52,7 +52,7 @@ export default function DayView({
   const dayReservations = reservations.filter((r) => r.date === selectedDateStr);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
       <div className="lg:col-span-2 bg-white rounded-xl border border-border shadow-sm">
         <div className="flex items-center justify-between p-4 border-b border-border">
           <button
@@ -128,7 +128,7 @@ export default function DayView({
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-border shadow-sm">
+      <div className="lg:col-span-3 bg-white rounded-xl border border-border shadow-sm">
         <div className="p-4 border-b border-border">
           <h3 className="font-semibold">
             {format(selectedDate, "M월 d일 (EEEE)", { locale: ko })}
