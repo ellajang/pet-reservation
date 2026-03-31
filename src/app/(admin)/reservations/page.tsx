@@ -324,7 +324,7 @@ export default function ReservationsPage() {
                     <button
                       key={i}
                       onClick={() => setSelectedDate(d)}
-                      className={`relative p-2 h-14 rounded-lg text-sm transition-colors ${
+                      className={`relative flex flex-col items-center justify-between py-2 h-16 rounded-lg text-sm transition-colors ${
                         !isSameMonth(d, currentMonth)
                           ? "text-gray-300"
                           : isSelected
@@ -334,10 +334,10 @@ export default function ReservationsPage() {
                           : "hover:bg-gray-50"
                       }`}
                     >
-                      {format(d, "d")}
-                      {dayCount > 0 && (
+                      <span>{format(d, "d")}</span>
+                      {dayCount > 0 ? (
                         <span
-                          className={`absolute bottom-1 left-1/2 -translate-x-1/2 min-w-[18px] h-[18px] text-[10px] font-bold rounded-full flex items-center justify-center ${
+                          className={`min-w-[20px] h-[20px] text-[10px] font-bold rounded-full flex items-center justify-center ${
                             isSelected
                               ? "bg-white text-primary"
                               : hasPending
@@ -347,6 +347,8 @@ export default function ReservationsPage() {
                         >
                           {dayCount}
                         </span>
+                      ) : (
+                        <span className="h-[20px]" />
                       )}
                     </button>
                   );
