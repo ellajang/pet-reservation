@@ -60,6 +60,7 @@ export async function PATCH(
         gender: body.pet.gender,
         neutered: body.pet.neutered,
         special_notes: body.pet.specialNotes || null,
+        size_category: body.pet.sizeCategory || "small",
       })
       .eq("id", body.pet.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

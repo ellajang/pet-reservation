@@ -27,6 +27,7 @@ interface ExistingPet {
   id: string;
   name: string;
   breed: string;
+  size_category: string;
 }
 
 interface ExistingCustomer {
@@ -35,6 +36,13 @@ interface ExistingCustomer {
   phone: string;
   pets: ExistingPet[];
 }
+
+const sizeOptions = [
+  { value: "small", label: "소형견", desc: "5kg 미만" },
+  { value: "medium", label: "중형견", desc: "5~15kg" },
+  { value: "large", label: "대형견", desc: "15kg 이상" },
+  { value: "special", label: "특수견", desc: "특수 견종" },
+];
 
 const DEFAULT_SLOTS = [
   "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
@@ -62,6 +70,7 @@ export default function BookingPage() {
     gender: "male",
     neutered: false,
     specialNotes: "",
+    sizeCategory: "small",
     serviceId: "",
     date: "",
     time: "",
@@ -107,6 +116,11 @@ export default function BookingPage() {
       setForm((f) => ({ ...f, name: data.customer.name }));
       if (data.customer.pets?.length === 1) {
         setSelectedPetId(data.customer.pets[0].id);
+        setForm((f) => ({
+          ...f,
+          name: data.customer.name,
+          sizeCategory: data.customer.pets[0].size_category || "small",
+        }));
       }
       setStep(3); // 바로 서비스 선택으로
     } else {
@@ -144,6 +158,11 @@ export default function BookingPage() {
     if (isNewCustomer || !selectedPetId) {
       body.petName = form.petName;
       body.breed = form.breed;
+      body.weight = form.weight ? parseFloat(form.weight).toString() : undefined;
+      body.gender = form.gender;
+      body.neutered = form.neutered.toString();
+      body.specialNotes = form.specialNotes;
+      body.sizeCategory = form.sizeCategory;
     }
 
     const res = await fetch("/api/reservations", {
@@ -320,6 +339,29 @@ export default function BookingPage() {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium mb-2">크기</label>
+            <div className="grid grid-cols-4 gap-2">
+              {sizeOptions.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() =>
+                    setForm({ ...form, sizeCategory: opt.value })
+                  }
+                  className={`py-2.5 rounded-xl text-center transition-colors ${
+                    form.sizeCategory === opt.value
+                      ? "bg-primary text-white"
+                      : "bg-white border border-border hover:border-primary/30"
+                  }`}
+                >
+                  <p className="text-sm font-medium">{opt.label}</p>
+                  <p className={`text-[10px] ${form.sizeCategory === opt.value ? "text-white/70" : "text-muted"}`}>{opt.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">견종</label>
@@ -422,7 +464,10 @@ export default function BookingPage() {
                       <button
                         key={pet.id}
                         type="button"
-                        onClick={() => setSelectedPetId(pet.id)}
+                        onClick={() => {
+                          setSelectedPetId(pet.id);
+                          setForm((f) => ({ ...f, sizeCategory: pet.size_category || "small" }));
+                        }}
                         className={`px-3 py-1 rounded-lg text-xs font-medium ${
                           selectedPetId === pet.id
                             ? "bg-green-600 text-white"
@@ -438,46 +483,41 @@ export default function BookingPage() {
             </div>
           )}
 
-          {["small", "medium", "large", "special"].map((cat) => {
-            const catServices = services.filter(
-              (s) => (s.size_category || "small") === cat
-            );
-            if (catServices.length === 0) return null;
-            return (
-              <div key={cat}>
-                <h4 className="text-sm font-semibold text-muted mb-2">
-                  {sizeCategoryLabel[cat]}
-                </h4>
-                <div className="space-y-2 mb-4">
-                  {catServices.map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => {
-                        setForm({ ...form, serviceId: s.id });
-                        setStep(4);
-                      }}
-                      className={`w-full text-left p-4 rounded-xl border transition-colors ${
-                        form.serviceId === s.id
-                          ? "border-primary bg-indigo-50"
-                          : "border-border bg-white hover:border-primary/30"
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">{s.name}</p>
-                          <p className="text-sm text-muted">약 {s.duration}분</p>
-                        </div>
-                        <p className="font-semibold">
-                          ₩{s.price.toLocaleString()}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
+          <p className="text-sm font-medium text-primary mb-3">
+            {sizeCategoryLabel[form.sizeCategory]} 서비스
+          </p>
+          {services
+            .filter((s) => (s.size_category || "small") === form.sizeCategory)
+            .map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => {
+                  setForm({ ...form, serviceId: s.id });
+                  setStep(4);
+                }}
+                className={`w-full text-left p-4 rounded-xl border transition-colors ${
+                  form.serviceId === s.id
+                    ? "border-primary bg-indigo-50"
+                    : "border-border bg-white hover:border-primary/30"
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium">{s.name}</p>
+                    <p className="text-sm text-muted">약 {s.duration}분</p>
+                  </div>
+                  <p className="font-semibold">
+                    ₩{s.price.toLocaleString()}
+                  </p>
                 </div>
-              </div>
-            );
-          })}
+              </button>
+            ))}
+          {services.filter((s) => (s.size_category || "small") === form.sizeCategory).length === 0 && (
+            <p className="text-muted text-center py-6 text-sm">
+              해당 크기의 서비스가 없습니다. 매장에 문의해주세요.
+            </p>
+          )}
 
           <button
             type="button"

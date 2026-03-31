@@ -78,6 +78,7 @@ export default function CustomerDetailModal({
     gender: string;
     neutered: boolean;
     specialNotes: string;
+    sizeCategory: string;
   } | null>(null);
 
   useEffect(() => {
@@ -99,6 +100,7 @@ export default function CustomerDetailModal({
             gender: p.gender || "male",
             neutered: p.neutered || false,
             specialNotes: p.special_notes || "",
+            sizeCategory: p.size_category || "small",
           });
         }
       })
@@ -125,6 +127,7 @@ export default function CustomerDetailModal({
               gender: editPet.gender,
               neutered: editPet.neutered,
               specialNotes: editPet.specialNotes,
+              sizeCategory: editPet.sizeCategory,
             }
           : undefined,
       }),
@@ -272,6 +275,32 @@ export default function CustomerDetailModal({
               <>
                 <hr className="border-border" />
                 <h5 className="text-sm font-medium text-muted">반려견 정보</h5>
+                <div>
+                  <label className="block text-sm font-medium mb-1">크기</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { value: "small", label: "소형견" },
+                      { value: "medium", label: "중형견" },
+                      { value: "large", label: "대형견" },
+                      { value: "special", label: "특수견" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() =>
+                          setEditPet({ ...editPet, sizeCategory: opt.value })
+                        }
+                        className={`py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          editPet.sizeCategory === opt.value
+                            ? "bg-primary text-white"
+                            : "bg-gray-50 border border-border hover:border-primary/30"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">

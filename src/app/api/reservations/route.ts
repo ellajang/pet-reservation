@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
         gender: body.gender || "male",
         neutered: body.neutered || false,
         special_notes: body.specialNotes || null,
+        size_category: body.sizeCategory || "small",
       })
       .select()
       .single();
