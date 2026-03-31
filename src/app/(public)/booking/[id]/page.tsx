@@ -83,14 +83,15 @@ export default function BookingPage() {
   const selectedService = services.find((s) => s.id === form.serviceId);
 
   // 날짜 변경 시 예약 가능 시간 조회
+  // 날짜/시간 선택 단계에 올 때마다 최신 예약 가능 시간 조회
   useEffect(() => {
-    if (!form.date || !selectedService) return;
+    if (step !== 4 || !form.date || !selectedService) return;
     setLoadingSlots(true);
     fetch(`/api/reservations/available?date=${form.date}&duration=${selectedService.duration}`)
       .then((res) => res.json())
       .then(setTimeSlots)
       .finally(() => setLoadingSlots(false));
-  }, [form.date, selectedService]);
+  }, [step, form.date, selectedService]);
 
   // 1단계: 연락처로 기존 고객 확인
   const handleCheckPhone = async (e: React.FormEvent) => {
