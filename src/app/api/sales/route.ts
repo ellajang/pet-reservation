@@ -33,10 +33,12 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
 
   // 예약 상태를 완료로 변경
-  await supabase
+  const { error: updateError } = await supabase
     .from("reservations")
     .update({ status: "completed" })
     .eq("id", body.reservationId);
+
+  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
   // 매출 기록
   const { data, error } = await supabase

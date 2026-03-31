@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { TIME_SLOTS } from "@/lib/constants";
 
 // 특정 날짜의 예약 가능한 시간대 조회
 export async function GET(request: NextRequest) {
@@ -17,15 +18,8 @@ export async function GET(request: NextRequest) {
     .eq("date", date)
     .not("status", "eq", "cancelled");
 
-  // 전체 시간 슬롯
-  const allSlots = [
-    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-    "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
-    "16:00", "16:30", "17:00",
-  ];
-
   // 각 슬롯이 예약 가능한지 체크
-  const available = allSlots.map((slot) => {
+  const available = TIME_SLOTS.map((slot) => {
     const [slotH, slotM] = slot.split(":").map(Number);
     const slotStart = slotH * 60 + slotM;
     const slotEnd = slotStart + duration;

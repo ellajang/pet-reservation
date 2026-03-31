@@ -44,11 +44,7 @@ const sizeOptions = [
   { value: "special", label: "특수견", desc: "특수 견종" },
 ];
 
-const DEFAULT_SLOTS = [
-  "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-  "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
-  "16:00", "16:30", "17:00",
-];
+import { TIME_SLOTS as DEFAULT_SLOTS } from "@/lib/constants";
 
 // === State & Actions ===
 

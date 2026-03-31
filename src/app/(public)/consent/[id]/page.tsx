@@ -64,12 +64,27 @@ export default function ConsentFormPage() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const signature = canvasRef.current?.toDataURL() || "";
-    // TODO: API 호출
-    console.log("동의서 제출:", { ...form, signature });
-    setSubmitted(true);
+
+    const res = await fetch("/api/consent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        healthIssues: form.healthIssues,
+        allergies: form.allergies,
+        aggressionLevel: form.aggressionLevel,
+        specialRequests: form.specialRequests,
+        signature,
+      }),
+    });
+
+    if (res.ok) {
+      setSubmitted(true);
+    } else {
+      alert("동의서 제출에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   if (submitted) {
