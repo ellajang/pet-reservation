@@ -9,7 +9,6 @@ import {
   User,
   Check,
   X,
-  AlertTriangle,
   Ban,
 } from "lucide-react";
 import {
@@ -52,14 +51,6 @@ const statusColors: Record<string, string> = {
   noshow: "bg-red-100 text-red-800 border-red-200",
 };
 
-const statusLabels: Record<string, string> = {
-  pending: "승인 대기",
-  confirmed: "확정",
-  completed: "완료",
-  cancelled: "취소",
-  noshow: "노쇼",
-};
-
 type ViewMode = "day" | "week" | "month";
 
 function ReservationCard({
@@ -73,10 +64,32 @@ function ReservationCard({
   onUpdateStatus: (id: string, status: string) => void;
   onBlockCustomer: (customerId: string, customerName: string) => void;
 }) {
+  const statusOptions = [
+    { value: "pending", label: "승인 대기", color: "text-yellow-700" },
+    { value: "confirmed", label: "확정", color: "text-blue-700" },
+    { value: "completed", label: "완료", color: "text-green-700" },
+    { value: "noshow", label: "노쇼", color: "text-red-700" },
+    { value: "cancelled", label: "취소", color: "text-gray-600" },
+  ];
+
   return (
     <div className={`p-3 rounded-lg border ${statusColors[r.status]}`}>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-medium">{statusLabels[r.status]}</span>
+        <select
+          value={r.status}
+          onChange={(e) => {
+            if (e.target.value !== r.status) {
+              onUpdateStatus(r.id, e.target.value);
+            }
+          }}
+          className="text-xs font-medium bg-transparent border border-current/20 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none"
+        >
+          {statusOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
         <span className="text-xs">{r.services?.name}</span>
       </div>
       {showDate && (
@@ -94,7 +107,7 @@ function ReservationCard({
       </div>
       <div className="text-xs mt-1">₩{r.price.toLocaleString()}</div>
 
-      {/* 승인 대기 상태 - 승인/거절 */}
+      {/* 승인 대기 - 빠른 액션 */}
       {r.status === "pending" && (
         <div className="flex gap-2 mt-2">
           <button
@@ -114,30 +127,6 @@ function ReservationCard({
             className="flex items-center gap-1 text-xs bg-red-600 text-white px-2 py-1 rounded"
           >
             <Ban className="w-3 h-3" /> 차단
-          </button>
-        </div>
-      )}
-
-      {/* 확정 상태 - 완료/노쇼/취소 */}
-      {r.status === "confirmed" && (
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={() => onUpdateStatus(r.id, "completed")}
-            className="flex items-center gap-1 text-xs bg-green-600 text-white px-2 py-1 rounded"
-          >
-            <Check className="w-3 h-3" /> 완료
-          </button>
-          <button
-            onClick={() => onUpdateStatus(r.id, "noshow")}
-            className="flex items-center gap-1 text-xs bg-red-500 text-white px-2 py-1 rounded"
-          >
-            <AlertTriangle className="w-3 h-3" /> 노쇼
-          </button>
-          <button
-            onClick={() => onUpdateStatus(r.id, "cancelled")}
-            className="flex items-center gap-1 text-xs bg-gray-400 text-white px-2 py-1 rounded"
-          >
-            <X className="w-3 h-3" /> 취소
           </button>
         </div>
       )}
