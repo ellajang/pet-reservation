@@ -75,7 +75,10 @@ export async function POST(request: NextRequest) {
         customer_id: customerId,
         name: body.petName,
         breed: body.breed,
-        gender: "male",
+        weight: body.weight || null,
+        gender: body.gender || "male",
+        neutered: body.neutered || false,
+        special_notes: body.specialNotes || null,
       })
       .select()
       .single();

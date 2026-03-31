@@ -155,6 +155,9 @@ export default function CustomerDetailModal({
   const completedCount = reservations.filter(
     (r) => r.status === "completed"
   ).length;
+  const cancelledCount = reservations.filter(
+    (r) => r.status === "cancelled"
+  ).length;
   const totalSpent = reservations
     .filter((r) => r.status === "completed")
     .reduce((sum, r) => sum + r.price, 0);
@@ -182,7 +185,7 @@ export default function CustomerDetailModal({
               </span>
             )}
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <div className="bg-gray-50 rounded-lg p-3 text-center">
               <p className="text-xs text-muted">방문</p>
               <p className="text-lg font-bold">{completedCount}회</p>
@@ -190,6 +193,12 @@ export default function CustomerDetailModal({
             <div className="bg-gray-50 rounded-lg p-3 text-center">
               <p className="text-xs text-muted">누적 매출</p>
               <p className="text-lg font-bold">₩{totalSpent.toLocaleString()}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <p className="text-xs text-muted">취소</p>
+              <p className={`text-lg font-bold ${cancelledCount > 0 ? "text-gray-500" : ""}`}>
+                {cancelledCount}회
+              </p>
             </div>
             <div className="bg-gray-50 rounded-lg p-3 text-center">
               <p className="text-xs text-muted">노쇼</p>
