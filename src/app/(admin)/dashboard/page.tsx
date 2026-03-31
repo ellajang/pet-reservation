@@ -56,10 +56,14 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(() => {
-    fetch("/api/dashboard")
-      .then((res) => res.json())
-      .then(setData)
-      .finally(() => setLoading(false));
+    // 시간 지난 예약 자동 완료 처리 후 대시보드 데이터 로드
+    fetch("/api/reservations/auto-complete", { method: "POST" })
+      .finally(() => {
+        fetch("/api/dashboard")
+          .then((res) => res.json())
+          .then(setData)
+          .finally(() => setLoading(false));
+      });
   }, []);
 
   useEffect(() => {
