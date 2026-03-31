@@ -11,7 +11,7 @@ import {
   TrendingUp,
   Crown,
 } from "lucide-react";
-import Link from "next/link";
+
 
 interface AnalyticsData {
   summary: {
@@ -83,19 +83,10 @@ export default function CustomerAnalyticsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">고객 분석</h2>
-          <p className="text-sm text-muted mt-1">
-            고객 세그먼트 및 행동 패턴 분석
-          </p>
-        </div>
-        <Link
-          href="/customers"
-          className="text-sm text-primary hover:text-primary-hover font-medium"
-        >
-          ← 고객 목록
-        </Link>
+      <div className="mb-6">
+        <p className="text-sm text-muted">
+          고객 세그먼트 및 행동 패턴 분석
+        </p>
       </div>
 
       {/* 요약 카드 */}

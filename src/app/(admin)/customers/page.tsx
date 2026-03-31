@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Search, Phone, Dog, BarChart3 } from "lucide-react";
-import Link from "next/link";
+import { Plus, Search, Phone, Dog } from "lucide-react";
 
 interface CustomerData {
   id: string;
@@ -92,22 +91,13 @@ export default function CustomersPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">고객 관리</h2>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/customers/analytics"
-            className="flex items-center gap-2 border border-border px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-          >
-            <BarChart3 className="w-4 h-4" />
-            고객 분석
-          </Link>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            고객 등록
-          </button>
-        </div>
+        <button
+          onClick={() => setShowAddForm(true)}
+          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          고객 등록
+        </button>
       </div>
 
       <div className="relative mb-6">
