@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Search, Phone, Dog } from "lucide-react";
+import CustomerDetailModal from "@/components/customer/CustomerDetailModal";
 
 interface CustomerData {
   id: string;
@@ -19,6 +20,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<CustomerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [newCustomer, setNewCustomer] = useState({
     name: "",
@@ -122,6 +124,7 @@ export default function CustomersPage() {
           customers.map((customer) => (
             <div
               key={customer.id}
+              onClick={() => setSelectedCustomerId(customer.id)}
               className="bg-white rounded-xl border border-border shadow-sm p-4 hover:border-primary/30 transition-colors cursor-pointer"
             >
               <div className="flex items-center justify-between">
@@ -338,6 +341,14 @@ export default function CustomersPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {selectedCustomerId && (
+        <CustomerDetailModal
+          customerId={selectedCustomerId}
+          onClose={() => setSelectedCustomerId(null)}
+          onUpdated={fetchCustomers}
+        />
       )}
     </div>
   );
