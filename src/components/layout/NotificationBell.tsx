@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useDashboard } from "@/lib/queries";
 
 interface Notification {
   id: string;
@@ -77,14 +78,19 @@ export default function NotificationBell() {
     [permissionGranted, playNotificationSound]
   );
 
-  // 페이지 로드 시 미처리 예약 불러오기
+  // 대시보드 캐시에서 미처리 예약 불러오기
+  const { data: dashboardData } = useDashboard() as {
+    data: { pendingReservations?: Record<string, unknown>[] } | undefined;
+  };
+
   useEffect(() => {
-    fetch("/api/dashboard")
-      .then((res) => res.json())
-      .then((data) => {
-        const pending = data.pendingReservations || [];
-        if (pending.length > 0) {
-          const loaded = pending.map((r: Record<string, unknown>) => ({
+    const pending = dashboardData?.pendingReservations || [];
+    if (pending.length > 0) {
+      setNotifications((prev) => {
+        const existingIds = new Set(prev.map((n) => n.id));
+        const newOnes = pending
+          .filter((r) => !existingIds.has(r.id as string))
+          .map((r) => ({
             id: r.id as string,
             message: `${(r.customers as Record<string, string>)?.name || "고객"}님이 ${r.date} ${(r.start_time as string)?.slice(0, 5)} ${(r.services as Record<string, string>)?.name || "서비스"} 예약을 요청했습니다`,
             time: new Date(r.created_at as string).toLocaleTimeString("ko-KR", {
@@ -93,10 +99,10 @@ export default function NotificationBell() {
             }),
             read: false,
           }));
-          setNotifications(loaded);
-        }
+        return newOnes.length > 0 ? [...newOnes, ...prev] : prev;
       });
-  }, []);
+    }
+  }, [dashboardData]);
 
   // Supabase Realtime 구독
   useEffect(() => {
