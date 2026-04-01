@@ -85,23 +85,30 @@ export default function NotificationBell() {
 
   useEffect(() => {
     const pending = dashboardData?.pendingReservations || [];
-    if (pending.length > 0) {
-      setNotifications((prev) => {
-        const existingIds = new Set(prev.map((n) => n.id));
-        const newOnes = pending
-          .filter((r) => !existingIds.has(r.id as string))
-          .map((r) => ({
-            id: r.id as string,
-            message: `${(r.customers as Record<string, string>)?.name || "고객"}님이 ${r.date} ${(r.start_time as string)?.slice(0, 5)} ${(r.services as Record<string, string>)?.name || "서비스"} 예약을 요청했습니다`,
-            time: new Date(r.created_at as string).toLocaleTimeString("ko-KR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            read: false,
-          }));
-        return newOnes.length > 0 ? [...newOnes, ...prev] : prev;
-      });
-    }
+    const pendingIds = new Set(pending.map((r) => r.id as string));
+
+    setNotifications((prev) => {
+      // 승인/처리된 알림 제거
+      const filtered = prev.filter(
+        (n) => pendingIds.has(n.id) || n.read
+      );
+
+      // 새로 들어온 pending 추가
+      const existingIds = new Set(filtered.map((n) => n.id));
+      const newOnes = pending
+        .filter((r) => !existingIds.has(r.id as string))
+        .map((r) => ({
+          id: r.id as string,
+          message: `${(r.customers as Record<string, string>)?.name || "고객"}님이 ${r.date} ${(r.start_time as string)?.slice(0, 5)} ${(r.services as Record<string, string>)?.name || "서비스"} 예약을 요청했습니다`,
+          time: new Date(r.created_at as string).toLocaleTimeString("ko-KR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          read: false,
+        }));
+
+      return newOnes.length > 0 ? [...newOnes, ...filtered] : filtered;
+    });
   }, [dashboardData]);
 
   // Supabase Realtime 구독
