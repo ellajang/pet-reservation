@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Search, Phone, Dog } from "lucide-react";
-import CustomerDetailModal from "@/components/customer/CustomerDetailModal";
-import { useCustomers, useCreateCustomer } from "@/lib/queries";
+import CustomerDetailModal from "./CustomerDetailModal";
+import { useCustomers, useCreateCustomer } from "@/hooks/useCustomers";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface CustomerData {

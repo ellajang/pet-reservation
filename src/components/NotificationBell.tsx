@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, X } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { useDashboard } from "@/lib/queries";
+import { supabase } from "@/shared/lib/supabase";
+import { useDashboard } from "@/hooks/useDashboard";
 
 interface Notification {
   id: string;

@@ -44,7 +44,7 @@ const sizeOptions = [
   { value: "special", label: "특수견", desc: "특수 견종" },
 ];
 
-import { TIME_SLOTS as DEFAULT_SLOTS } from "@/lib/constants";
+import { TIME_SLOTS as DEFAULT_SLOTS } from "@/shared/lib/constants";
 
 // === State & Actions ===
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/shared/lib/supabase";
 
 // 시간이 지난 확정 예약을 자동으로 완료 처리
 export async function POST() {

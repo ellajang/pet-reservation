@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
-import { TIME_SLOTS } from "@/lib/constants";
+import { supabase } from "@/shared/lib/supabase";
+import { TIME_SLOTS } from "@/shared/lib/constants";
 
 // 특정 날짜의 예약 가능한 시간대 조회
 export async function GET(request: NextRequest) {

@@ -3,13 +3,13 @@
 import { useReducer } from "react";
 import { Plus } from "lucide-react";
 import { format, startOfWeek } from "date-fns";
-import ReservationModal from "@/components/reservation/ReservationModal";
-import DayView from "@/components/reservation/DayView";
-import WeekView from "@/components/reservation/WeekView";
-import MonthView from "@/components/reservation/MonthView";
-import { useReservations, useUpdateReservationStatus } from "@/lib/queries";
+import ReservationModal from "./components/ReservationModal";
+import DayView from "./components/DayView";
+import WeekView from "./components/WeekView";
+import MonthView from "./components/MonthView";
+import type { ReservationItem } from "./components/ReservationCard";
+import { useReservations, useUpdateReservationStatus } from "@/hooks/useReservations";
 import { useQueryClient } from "@tanstack/react-query";
-import type { ReservationItem } from "@/components/reservation/ReservationCard";
 
 // === State & Actions ===
 

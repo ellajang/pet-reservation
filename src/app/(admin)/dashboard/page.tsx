@@ -13,11 +13,8 @@ import {
   Dog,
   Phone,
 } from "lucide-react";
-import {
-  useDashboard,
-  useAutoComplete,
-  useUpdateReservationStatus,
-} from "@/lib/queries";
+import { useDashboard } from "@/hooks/useDashboard";
+import { useAutoComplete, useUpdateReservationStatus } from "@/hooks/useReservations";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface Reservation {

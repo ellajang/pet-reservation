@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "@/components/layout/Sidebar";
-import NotificationBell from "@/components/layout/NotificationBell";
+import Sidebar from "@/components/Sidebar";
+import NotificationBell from "@/components/NotificationBell";
 import { LogOut } from "lucide-react";
 
 export default function AdminLayout({

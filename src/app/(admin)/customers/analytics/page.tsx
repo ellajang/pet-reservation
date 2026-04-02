@@ -1,6 +1,6 @@
 "use client";
 
-import { useCustomerAnalytics } from "@/lib/queries";
+import { useCustomerAnalytics } from "@/hooks/useCustomers";
 import {
   Users,
   RefreshCw,

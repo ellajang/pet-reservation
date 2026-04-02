@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { useSales } from "@/lib/queries";
+import { useSales } from "@/hooks/useSales";
 
 interface SalesItem {
   id: string;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Save, Copy, Check, Plus, Pencil, Trash2, X } from "lucide-react";
-import { useServices, useSettings } from "@/lib/queries";
+import { useServices, useSettings } from "@/hooks/useSettings";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface Service {

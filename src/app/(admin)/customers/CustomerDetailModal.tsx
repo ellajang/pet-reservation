@@ -2,7 +2,7 @@
 
 import { useReducer, useEffect } from "react";
 import { X, Save, Clock, Scissors } from "lucide-react";
-import { useCustomerDetail, useUpdateCustomer } from "@/lib/queries";
+import { useCustomerDetail, useUpdateCustomer } from "@/hooks/useCustomers";
 
 interface Reservation {
   id: string;
