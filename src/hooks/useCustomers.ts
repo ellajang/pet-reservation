@@ -39,6 +39,17 @@ export function useUpdateCustomer() {
   });
 }
 
+export function useBlockCustomer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, blocked, reason }: { id: string; blocked: boolean; reason: string | null }) =>
+      patchJSON(`/api/customers/${id}/block`, { blocked, reason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
+}
+
 export function useCustomerAnalytics() {
   return useQuery({
     queryKey: ["customer-analytics"],

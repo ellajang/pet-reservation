@@ -26,6 +26,17 @@ export function useUpdateReservationStatus() {
   });
 }
 
+export function useCreateReservation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: unknown) => postJSON("/api/reservations", body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
 export function useAutoComplete() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useAutoComplete, useUpdateReservationStatus } from "@/hooks/useReservations";
-import { useQueryClient } from "@tanstack/react-query";
+import { useBlockCustomer } from "@/hooks/useCustomers";
 
 interface Reservation {
   id: string;
@@ -61,7 +61,7 @@ export default function DashboardPage() {
   };
   const autoComplete = useAutoComplete();
   const updateStatus = useUpdateReservationStatus();
-  const queryClient = useQueryClient();
+  const blockCustomerMutation = useBlockCustomer();
 
   // 페이지 로드 시 자동 완료 처리
   useEffect(() => {
@@ -73,32 +73,25 @@ export default function DashboardPage() {
     updateStatus.mutate({ id, status });
   };
 
-  const blockCustomer = async (customerId: string, customerName: string) => {
+  const blockCustomer = (customerId: string, customerName: string) => {
     const reason = prompt(
       `${customerName}님을 차단하시겠습니까?\n차단 사유를 입력하세요:`
     );
     if (reason === null) return;
 
-    await fetch(`/api/customers/${customerId}/block`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ blocked: true, reason }),
-    });
+    // 차단 처리
+    blockCustomerMutation.mutate({ id: customerId, blocked: true, reason });
 
+    // 대기 중인 예약 모두 취소
     const pending =
-      data?.pendingReservations.filter(
+      data?.pendingReservations?.filter(
         (r) => r.customer_id === customerId
       ) || [];
     for (const r of pending) {
-      await fetch(`/api/reservations/${r.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "cancelled" }),
-      });
+      updateStatus.mutate({ id: r.id, status: "cancelled" });
     }
 
     alert(`${customerName}님이 차단되었습니다.`);
-    queryClient.invalidateQueries({ queryKey: ["dashboard"] });
   };
 
   const pendingCount = data?.pendingReservations?.length || 0;

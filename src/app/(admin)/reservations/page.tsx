@@ -9,7 +9,7 @@ import WeekView from "./components/WeekView";
 import MonthView from "./components/MonthView";
 import type { ReservationItem } from "./components/ReservationCard";
 import { useReservations, useUpdateReservationStatus } from "@/hooks/useReservations";
-import { useQueryClient } from "@tanstack/react-query";
+import { useBlockCustomer } from "@/hooks/useCustomers";
 
 // === State & Actions ===
 
@@ -67,35 +67,26 @@ export default function ReservationsPage() {
     isLoading: boolean;
   };
   const updateStatusMutation = useUpdateReservationStatus();
-  const queryClient = useQueryClient();
+  const blockCustomerMutation = useBlockCustomer();
 
   const updateStatus = (id: string, status: string) => {
     updateStatusMutation.mutate({ id, status });
   };
 
-  const blockCustomer = async (customerId: string, customerName: string) => {
+  const blockCustomer = (customerId: string, customerName: string) => {
     const reason = prompt(`${customerName}님을 차단하시겠습니까?\n차단 사유를 입력하세요:`);
     if (reason === null) return;
 
-    await fetch(`/api/customers/${customerId}/block`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ blocked: true, reason }),
-    });
+    blockCustomerMutation.mutate({ id: customerId, blocked: true, reason });
 
     const pendingRes = reservations.filter(
       (r) => r.customer_id === customerId && r.status === "pending"
     );
     for (const r of pendingRes) {
-      await fetch(`/api/reservations/${r.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "cancelled" }),
-      });
+      updateStatusMutation.mutate({ id: r.id, status: "cancelled" });
     }
 
     alert(`${customerName}님이 차단되었습니다. 앞으로 예약이 불가합니다.`);
-    queryClient.invalidateQueries({ queryKey: ["reservations"] });
   };
 
   return (
@@ -165,7 +156,7 @@ export default function ReservationsPage() {
       {view.showModal && (
         <ReservationModal
           onClose={() => dispatch({ type: "CLOSE_MODAL" })}
-          onSuccess={() => queryClient.invalidateQueries({ queryKey: ["reservations"] })}
+          onSuccess={() => {}}
         />
       )}
     </div>

@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Phone, Dog } from "lucide-react";
 import CustomerDetailModal from "./CustomerDetailModal";
-import { useCustomers, useCreateCustomer } from "@/hooks/useCustomers";
-import { useQueryClient } from "@tanstack/react-query";
+import { useCustomers, useCreateCustomer, useBlockCustomer } from "@/hooks/useCustomers";
 
 interface CustomerData {
   id: string;
@@ -33,12 +32,24 @@ export default function CustomersPage() {
     specialNotes: "",
   });
 
-  const queryClient = useQueryClient();
   const { data: customers = [], isLoading: loading } = useCustomers(debouncedSearch) as {
     data: CustomerData[];
     isLoading: boolean;
   };
   const createCustomer = useCreateCustomer();
+  const blockCustomer = useBlockCustomer();
+
+  const handleToggleBlock = (e: React.MouseEvent, customer: CustomerData) => {
+    e.stopPropagation();
+    if (!customer.is_blocked) {
+      const reason = prompt(`${customer.name}님을 차단하시겠습니까?\n차단 사유:`);
+      if (reason === null) return;
+      blockCustomer.mutate({ id: customer.id, blocked: true, reason });
+    } else {
+      if (!confirm(`${customer.name}님의 차단을 해제하시겠습니까?`)) return;
+      blockCustomer.mutate({ id: customer.id, blocked: false, reason: null });
+    }
+  };
 
   // 검색 디바운스
   useEffect(() => {
@@ -155,27 +166,7 @@ export default function CustomersPage() {
                   </div>
                 </div>
                 <button
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    const newBlocked = !customer.is_blocked;
-                    if (newBlocked) {
-                      const reason = prompt(`${customer.name}님을 차단하시겠습니까?\n차단 사유:`);
-                      if (reason === null) return;
-                      await fetch(`/api/customers/${customer.id}/block`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ blocked: true, reason }),
-                      });
-                    } else {
-                      if (!confirm(`${customer.name}님의 차단을 해제하시겠습니까?`)) return;
-                      await fetch(`/api/customers/${customer.id}/block`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ blocked: false, reason: null }),
-                      });
-                    }
-                    queryClient.invalidateQueries({ queryKey: ["customers"] });
-                  }}
+                  onClick={(e) => handleToggleBlock(e, customer)}
                   className={`text-xs px-3 py-1.5 rounded-lg font-medium ${
                     customer.is_blocked
                       ? "bg-gray-100 text-foreground hover:bg-gray-200"
@@ -343,7 +334,7 @@ export default function CustomersPage() {
         <CustomerDetailModal
           customerId={selectedCustomerId}
           onClose={() => setSelectedCustomerId(null)}
-          onUpdated={() => queryClient.invalidateQueries({ queryKey: ["customers"] })}
+          onUpdated={() => {}}
         />
       )}
     </div>

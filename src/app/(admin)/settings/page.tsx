@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Save, Copy, Check, Plus, Pencil, Trash2, X } from "lucide-react";
-import { useServices, useSettings } from "@/hooks/useSettings";
-import { useQueryClient } from "@tanstack/react-query";
+import {
+  useServices, useSettings, useSaveSettings,
+  useCreateService, useUpdateService, useDeleteService,
+} from "@/hooks/useSettings";
 
 interface Service {
   id: string;
@@ -50,7 +52,10 @@ export default function SettingsPage() {
 
   const { data: services = [] } = useServices() as { data: Service[] };
   const { data: settingsData } = useSettings() as { data: Record<string, unknown> | undefined };
-  const queryClient = useQueryClient();
+  const saveSettings = useSaveSettings();
+  const createService = useCreateService();
+  const updateService = useUpdateService();
+  const deleteService = useDeleteService();
 
   // 설정 데이터 로드
   useEffect(() => {
@@ -68,21 +73,24 @@ export default function SettingsPage() {
     setBookingUrl(`${window.location.origin}/booking/new`);
   }, []);
 
-  const handleSaveSettings = async () => {
+  const handleSaveSettings = () => {
     setSaving(true);
-    const res = await fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    saveSettings.mutate(
+      {
         shopName: shopSettings.shopName,
         businessHoursStart: shopSettings.hoursStart,
         businessHoursEnd: shopSettings.hoursEnd,
         closedDays: shopSettings.closedDays,
-      }),
-    });
-    setSaveMessage(res.ok ? "저장되었습니다!" : "저장에 실패했습니다");
-    setTimeout(() => setSaveMessage(""), 2000);
-    setSaving(false);
+      },
+      {
+        onSuccess: () => setSaveMessage("저장되었습니다!"),
+        onError: () => setSaveMessage("저장에 실패했습니다"),
+        onSettled: () => {
+          setTimeout(() => setSaveMessage(""), 2000);
+          setSaving(false);
+        },
+      }
+    );
   };
 
   const handleCopyLink = () => {
@@ -119,7 +127,7 @@ export default function SettingsPage() {
     });
   };
 
-  const handleServiceSubmit = async (e: React.FormEvent) => {
+  const handleServiceSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setServiceModal((m) => ({ ...m, submitting: true }));
 
@@ -131,28 +139,21 @@ export default function SettingsPage() {
       size_category: serviceModal.form.size_category,
     };
 
-    if (serviceModal.editing) {
-      await fetch(`/api/services/${serviceModal.editing.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-    } else {
-      await fetch("/api/services", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-    }
+    const onDone = {
+      onSuccess: () => setServiceModal((m) => ({ ...m, open: false, submitting: false })),
+      onError: () => setServiceModal((m) => ({ ...m, submitting: false })),
+    };
 
-    setServiceModal((m) => ({ ...m, open: false, submitting: false }));
-    queryClient.invalidateQueries({ queryKey: ["services"] });
+    if (serviceModal.editing) {
+      updateService.mutate({ id: serviceModal.editing.id, body }, onDone);
+    } else {
+      createService.mutate(body, onDone);
+    }
   };
 
-  const handleDeleteService = async (id: string) => {
+  const handleDeleteService = (id: string) => {
     if (!confirm("이 서비스를 삭제하시겠습니까?")) return;
-    await fetch(`/api/services/${id}`, { method: "DELETE" });
-    queryClient.invalidateQueries({ queryKey: ["services"] });
+    deleteService.mutate(id);
   };
 
   return (

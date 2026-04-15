@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchJSON } from "@/shared/lib/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchJSON, postJSON, patchJSON } from "@/shared/lib/api";
 
 export function useSettings() {
   return useQuery({
@@ -8,10 +8,50 @@ export function useSettings() {
   });
 }
 
+export function useSaveSettings() {
+  return useMutation({
+    mutationFn: (body: unknown) => patchJSON("/api/settings", body),
+  });
+}
+
 export function useServices() {
   return useQuery({
     queryKey: ["services"],
     queryFn: () => fetchJSON("/api/services"),
     staleTime: 60 * 1000,
+  });
+}
+
+export function useCreateService() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: unknown) => postJSON("/api/services", body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["services"] });
+    },
+  });
+}
+
+export function useUpdateService() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: unknown }) =>
+      patchJSON(`/api/services/${id}`, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["services"] });
+    },
+  });
+}
+
+export function useDeleteService() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetch(`/api/services/${id}`, { method: "DELETE" }).then((res) => {
+        if (!res.ok) throw new Error("삭제에 실패했습니다");
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["services"] });
+    },
   });
 }
