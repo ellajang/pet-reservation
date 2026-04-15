@@ -43,14 +43,14 @@ export async function GET() {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      maxAge: 60 * 60 * 24,
+      maxAge: 60 * 60 * 12,
       path: "/",
     });
     response.cookies.set("sb-refresh-token", refreshData.session.refresh_token, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      maxAge: 60 * 60 * 24,
+      maxAge: 60 * 60 * 12,
       path: "/",
     });
     return response;
