@@ -115,6 +115,7 @@ export default function CustomersPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          id="customer-search"
           placeholder="고객명, 연락처로 검색"
           aria-label="고객 검색"
           className="w-full pl-10 pr-4 py-3 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
@@ -199,28 +200,28 @@ export default function CustomersPage() {
               <h4 className="font-medium text-sm text-muted">보호자 정보</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">이름</label>
+                  <label htmlFor="new-name" className="block text-sm font-medium mb-1">이름</label>
                   <input
+                    id="new-name"
                     type="text"
                     value={newCustomer.name}
                     onChange={(e) =>
                       setNewCustomer({ ...newCustomer, name: e.target.value })
                     }
-                    aria-label="이름"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">연락처</label>
+                  <label htmlFor="new-phone" className="block text-sm font-medium mb-1">연락처</label>
                   <input
+                    id="new-phone"
                     type="tel"
                     value={newCustomer.phone}
                     onChange={(e) =>
                       setNewCustomer({ ...newCustomer, phone: e.target.value })
                     }
                     placeholder="010-0000-0000"
-                    aria-label="연락처"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
@@ -232,28 +233,28 @@ export default function CustomersPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">반려견 이름</label>
+                  <label htmlFor="new-pet-name" className="block text-sm font-medium mb-1">반려견 이름</label>
                   <input
+                    id="new-pet-name"
                     type="text"
                     value={newCustomer.petName}
                     onChange={(e) =>
                       setNewCustomer({ ...newCustomer, petName: e.target.value })
                     }
-                    aria-label="반려견 이름"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">견종</label>
+                  <label htmlFor="new-breed" className="block text-sm font-medium mb-1">견종</label>
                   <input
+                    id="new-breed"
                     type="text"
                     value={newCustomer.breed}
                     onChange={(e) =>
                       setNewCustomer({ ...newCustomer, breed: e.target.value })
                     }
                     placeholder="예: 말티즈"
-                    aria-label="견종"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
@@ -262,26 +263,26 @@ export default function CustomersPage() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">몸무게 (kg)</label>
+                  <label htmlFor="new-weight" className="block text-sm font-medium mb-1">몸무게 (kg)</label>
                   <input
+                    id="new-weight"
                     type="number"
                     value={newCustomer.weight}
                     onChange={(e) =>
                       setNewCustomer({ ...newCustomer, weight: e.target.value })
                     }
                     step="0.1"
-                    aria-label="몸무게"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">성별</label>
+                  <label htmlFor="new-gender" className="block text-sm font-medium mb-1">성별</label>
                   <select
+                    id="new-gender"
                     value={newCustomer.gender}
                     onChange={(e) =>
                       setNewCustomer({ ...newCustomer, gender: e.target.value })
                     }
-                    aria-label="성별"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="male">남아</option>
@@ -292,11 +293,11 @@ export default function CustomersPage() {
                   <label className="flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
+                      id="new-neutered"
                       checked={newCustomer.neutered}
                       onChange={(e) =>
                         setNewCustomer({ ...newCustomer, neutered: e.target.checked })
                       }
-                      aria-label="중성화"
                       className="rounded"
                     />
                     중성화
@@ -305,15 +306,15 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">특이사항</label>
+                <label htmlFor="new-notes" className="block text-sm font-medium mb-1">특이사항</label>
                 <textarea
+                  id="new-notes"
                   value={newCustomer.specialNotes}
                   onChange={(e) =>
                     setNewCustomer({ ...newCustomer, specialNotes: e.target.value })
                   }
                   rows={3}
                   placeholder="공격성, 알러지, 주의사항 등"
-                  aria-label="특이사항"
                   className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                 />
               </div>
