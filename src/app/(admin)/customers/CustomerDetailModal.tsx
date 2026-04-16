@@ -125,33 +125,23 @@ export default function CustomerDetailModal({
     });
   }, [customer]);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     dispatch({ type: "SET_SAVING", value: true });
-    updateCustomer.mutate(
-      {
-        id: customerId,
-        body: {
-          customer: { name: state.editName, phone: state.editPhone, memo: state.editMemo },
-          pet: state.editPet ? {
-            id: state.editPet.id,
-            name: state.editPet.name,
-            breed: state.editPet.breed,
-            weight: state.editPet.weight ? parseFloat(state.editPet.weight) : null,
-            gender: state.editPet.gender,
-            neutered: state.editPet.neutered,
-            specialNotes: state.editPet.specialNotes,
-            sizeCategory: state.editPet.sizeCategory,
-          } : undefined,
-        },
+
+    const body = {
+      customer: { name: state.editName, phone: state.editPhone, memo: state.editMemo },
+      pet: state.editPet
+        ? { ...state.editPet, weight: state.editPet.weight ? parseFloat(state.editPet.weight) : null }
+        : undefined,
+    };
+
+    updateCustomer.mutate({ id: customerId, body }, {
+      onSuccess: () => { onUpdated(); onClose(); },
+      onError: (err: Error) => {
+        alert(err.message || "저장에 실패했습니다");
+        dispatch({ type: "SET_SAVING", value: false });
       },
-      {
-        onSuccess: () => { onUpdated(); onClose(); },
-        onError: (err: Error) => {
-          alert(err.message || "저장에 실패했습니다");
-          dispatch({ type: "SET_SAVING", value: false });
-        },
-      }
-    );
+    });
   };
 
   if (loading) {
