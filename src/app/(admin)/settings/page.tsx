@@ -229,12 +229,12 @@ export default function SettingsPage() {
           <div className="flex items-center gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">시작</label>
-              <input type="time" value={shopSettings.hoursStart} onChange={(e) => setShopSettings((s) => ({ ...s, hoursStart: e.target.value }))} className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              <input type="time" aria-label="영업시작시간" value={shopSettings.hoursStart} onChange={(e) => setShopSettings((s) => ({ ...s, hoursStart: e.target.value }))} className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
             </div>
             <span className="mt-6">~</span>
             <div>
               <label className="block text-sm font-medium mb-1">종료</label>
-              <input type="time" value={shopSettings.hoursEnd} onChange={(e) => setShopSettings((s) => ({ ...s, hoursEnd: e.target.value }))} className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              <input type="time" aria-label="영업종료시간" value={shopSettings.hoursEnd} onChange={(e) => setShopSettings((s) => ({ ...s, hoursEnd: e.target.value }))} className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
             </div>
           </div>
           <div className="mt-4">
@@ -254,7 +254,7 @@ export default function SettingsPage() {
           <h3 className="font-semibold mb-4">고객 예약 링크</h3>
           <p className="text-sm text-muted mb-3">이 링크를 카카오톡으로 고객에게 보내면, 고객이 직접 예약할 수 있습니다.</p>
           <div className="flex gap-2 max-w-lg">
-            <input type="text" value={bookingUrl} readOnly className="flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-gray-50" />
+            <input type="text" aria-label="예약링크" value={bookingUrl} readOnly className="flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-gray-50" />
             <button onClick={handleCopyLink} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary-hover transition-colors">
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? "복사됨" : "복사"}
@@ -296,23 +296,23 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-sm font-medium mb-1">서비스명</label>
-                <input type="text" value={serviceModal.form.name} onChange={(e) => setServiceModal((m) => ({ ...m, form: { ...m.form, name: e.target.value } }))} placeholder="예: 전체미용" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
+                <input type="text" aria-label="서비스명" value={serviceModal.form.name} onChange={(e) => setServiceModal((m) => ({ ...m, form: { ...m.form, name: e.target.value } }))} placeholder="예: 전체미용" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">소요시간 (분)</label>
-                  <input type="number" value={serviceModal.form.duration} onChange={(e) => setServiceModal((m) => ({ ...m, form: { ...m.form, duration: e.target.value } }))} placeholder="120" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
+                  <input type="number" aria-label="소요시간" value={serviceModal.form.duration} onChange={(e) => setServiceModal((m) => ({ ...m, form: { ...m.form, duration: e.target.value } }))} placeholder="120" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">가격 (원)</label>
-                  <input type="number" value={serviceModal.form.price} onChange={(e) => setServiceModal((m) => ({ ...m, form: { ...m.form, price: e.target.value } }))} placeholder="50000" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
+                  <input type="number" aria-label="가격" value={serviceModal.form.price} onChange={(e) => setServiceModal((m) => ({ ...m, form: { ...m.form, price: e.target.value } }))} placeholder="50000" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1">설명 (선택)</label>
-                <input type="text" value={serviceModal.form.description} onChange={(e) => setServiceModal((m) => ({ ...m, form: { ...m.form, description: e.target.value } }))} placeholder="예: 목욕 + 전체 커트" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                <input type="text" aria-label="설명" value={serviceModal.form.description} onChange={(e) => setServiceModal((m) => ({ ...m, form: { ...m.form, description: e.target.value } }))} placeholder="예: 목욕 + 전체 커트" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
 
               <div className="flex gap-3 pt-2">

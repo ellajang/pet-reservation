@@ -303,7 +303,7 @@ export default function BookingPage() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">연락처</label>
-            <input type="tel" value={form.phone} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "phone", value: e.target.value })} placeholder="010-0000-0000" className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
+            <input type="tel" aria-label="연락처" value={form.phone} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "phone", value: e.target.value })} placeholder="010-0000-0000" className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
           </div>
           <button type="submit" disabled={state.checking} className="w-full py-3 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-hover disabled:opacity-50">
             {state.checking ? "확인 중..." : "다음"}
@@ -318,14 +318,14 @@ export default function BookingPage() {
 
           <div>
             <label className="block text-sm font-medium mb-1"><User className="w-4 h-4 inline mr-1" />보호자 이름</label>
-            <input type="text" value={form.name} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "name", value: e.target.value })} className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
+            <input type="text" aria-label="보호자 이름" value={form.name} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "name", value: e.target.value })} className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
           </div>
 
           <hr className="border-border" />
 
           <div>
             <label className="block text-sm font-medium mb-1"><Dog className="w-4 h-4 inline mr-1" />반려견 이름</label>
-            <input type="text" value={form.petName} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "petName", value: e.target.value })} className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
+            <input type="text" aria-label="반려견 이름" value={form.petName} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "petName", value: e.target.value })} className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
           </div>
 
           <div>
@@ -343,25 +343,25 @@ export default function BookingPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">견종</label>
-              <input type="text" value={form.breed} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "breed", value: e.target.value })} placeholder="예: 말티즈" className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
+              <input type="text" aria-label="견종" value={form.breed} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "breed", value: e.target.value })} placeholder="예: 말티즈" className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">몸무게 (kg)</label>
-              <input type="number" value={form.weight} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "weight", value: e.target.value })} step="0.1" placeholder="선택사항" className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              <input type="number" aria-label="몸무게" value={form.weight} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "weight", value: e.target.value })} step="0.1" placeholder="선택사항" className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">성별</label>
-              <select value={form.gender} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "gender", value: e.target.value })} className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+              <select aria-label="성별" value={form.gender} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "gender", value: e.target.value })} className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 <option value="male">남아</option>
                 <option value="female">여아</option>
               </select>
             </div>
             <div className="flex items-end pb-1">
               <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={form.neutered} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "neutered", value: e.target.checked })} className="rounded" />
+                <input type="checkbox" aria-label="중성화" checked={form.neutered} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "neutered", value: e.target.checked })} className="rounded" />
                 중성화 여부
               </label>
             </div>
@@ -369,7 +369,7 @@ export default function BookingPage() {
 
           <div>
             <label className="block text-sm font-medium mb-1">특이사항 (선택)</label>
-            <textarea value={form.specialNotes} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "specialNotes", value: e.target.value })} rows={2} placeholder="공격성, 알러지, 주의사항 등" className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+            <textarea aria-label="특이사항" value={form.specialNotes} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "specialNotes", value: e.target.value })} rows={2} placeholder="공격성, 알러지, 주의사항 등" className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -426,7 +426,7 @@ export default function BookingPage() {
 
           <div>
             <label className="block text-sm font-medium mb-2"><Calendar className="w-4 h-4 inline mr-1" />날짜 선택</label>
-            <input type="date" value={form.date} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "date", value: e.target.value })} min={new Date().toISOString().split("T")[0]} className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
+            <input type="date" aria-label="날짜" value={form.date} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "date", value: e.target.value })} min={new Date().toISOString().split("T")[0]} className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
           </div>
 
           {form.date && (

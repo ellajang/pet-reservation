@@ -124,7 +124,7 @@ export default function ConsentFormPage() {
             건강 상태 / 질환
           </label>
           <textarea
-            value={form.healthIssues}
+            aria-label="건강상태" value={form.healthIssues}
             onChange={(e) =>
               setForm({ ...form, healthIssues: e.target.value })
             }
@@ -138,7 +138,7 @@ export default function ConsentFormPage() {
           <label className="block text-sm font-medium mb-1">알러지</label>
           <input
             type="text"
-            value={form.allergies}
+            aria-label="알러지" value={form.allergies}
             onChange={(e) =>
               setForm({ ...form, allergies: e.target.value })
             }
@@ -179,7 +179,7 @@ export default function ConsentFormPage() {
             요청 사항
           </label>
           <textarea
-            value={form.specialRequests}
+            aria-label="요청사항" value={form.specialRequests}
             onChange={(e) =>
               setForm({ ...form, specialRequests: e.target.value })
             }
@@ -219,7 +219,7 @@ export default function ConsentFormPage() {
         <label className="flex items-start gap-3 text-sm">
           <input
             type="checkbox"
-            checked={form.agreed}
+            aria-label="동의" checked={form.agreed}
             onChange={(e) => setForm({ ...form, agreed: e.target.checked })}
             className="mt-0.5 rounded"
             required

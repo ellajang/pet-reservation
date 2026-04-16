@@ -41,7 +41,7 @@ export default function SalesPage() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">매출 통계</h2>
         <input
-          type="month"
+          type="month" aria-label="월 선택"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
           className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
