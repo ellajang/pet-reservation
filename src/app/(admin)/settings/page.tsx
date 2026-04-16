@@ -214,10 +214,7 @@ export default function SettingsPage() {
           <h3 className="font-semibold mb-4">매장 정보</h3>
           <div>
             <label className="block text-sm font-medium mb-1">매장명</label>
-            <input
-              type="text"
-              value={shopSettings.shopName}
-              onChange={(e) => setShopSettings((s) => ({ ...s, shopName: e.target.value }))}
+            <input type="text" aria-label="매장명" value={shopSettings.shopName} onChange={(e) => setShopSettings((s) => ({ ...s, shopName: e.target.value }))}
               className="w-full max-w-md border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>

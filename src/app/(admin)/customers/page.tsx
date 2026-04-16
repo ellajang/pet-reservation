@@ -111,13 +111,7 @@ export default function CustomersPage() {
 
       <div className="relative mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          id="customer-search"
-          aria-label="고객 검색"
-          placeholder="고객명, 연락처로 검색"
+        <input type="text" aria-label="고객 검색" id="customer-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="고객명, 연락처로 검색"
           className="w-full pl-10 pr-4 py-3 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>

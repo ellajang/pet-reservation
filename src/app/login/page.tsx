@@ -48,24 +48,12 @@ export default function LoginPage() {
         >
           <div>
             <label className="block text-sm font-medium mb-1">이메일</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="example@email.com"
-              className="w-full border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              required
-            />
+            <input type="email" aria-label="이메일" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@email.com" className="w-full border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">비밀번호</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              required
+            <input type="password" aria-label="비밀번호" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required
             />
           </div>
 
