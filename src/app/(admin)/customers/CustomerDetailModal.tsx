@@ -210,16 +210,16 @@ export default function CustomerDetailModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="edit-name" className="block text-sm font-medium mb-1">이름</label>
-                <input id="edit-name" type="text" value={state.editName} onChange={(e) => dispatch({ type: "SET_FIELD", field: "editName", value: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                <input id="edit-name" aria-label="이름" type="text" value={state.editName} onChange={(e) => dispatch({ type: "SET_FIELD", field: "editName", value: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
                 <label htmlFor="edit-phone" className="block text-sm font-medium mb-1">연락처</label>
-                <input id="edit-phone" type="tel" value={state.editPhone} onChange={(e) => dispatch({ type: "SET_FIELD", field: "editPhone", value: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                <input id="edit-phone" aria-label="연락처" type="tel" value={state.editPhone} onChange={(e) => dispatch({ type: "SET_FIELD", field: "editPhone", value: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
             <div>
               <label htmlFor="edit-memo" className="block text-sm font-medium mb-1">메모</label>
-              <textarea id="edit-memo" value={state.editMemo} onChange={(e) => dispatch({ type: "SET_FIELD", field: "editMemo", value: e.target.value })} rows={2} placeholder="고객 관련 메모" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+              <textarea id="edit-memo" aria-label="메모" value={state.editMemo} onChange={(e) => dispatch({ type: "SET_FIELD", field: "editMemo", value: e.target.value })} rows={2} placeholder="고객 관련 메모" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
             </div>
 
             {state.editPet && (
@@ -239,35 +239,35 @@ export default function CustomerDetailModal({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="edit-pet-name" className="block text-sm font-medium mb-1">반려견 이름</label>
-                    <input id="edit-pet-name" type="text" value={state.editPet.name} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "name", value: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <input id="edit-pet-name" aria-label="반려견 이름" type="text" value={state.editPet.name} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "name", value: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
                   <div>
                     <label htmlFor="edit-pet-breed" className="block text-sm font-medium mb-1">견종</label>
-                    <input id="edit-pet-breed" type="text" value={state.editPet.breed} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "breed", value: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <input id="edit-pet-breed" aria-label="견종" type="text" value={state.editPet.breed} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "breed", value: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label htmlFor="edit-pet-weight" className="block text-sm font-medium mb-1">몸무게 (kg)</label>
-                    <input id="edit-pet-weight" type="number" value={state.editPet.weight} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "weight", value: e.target.value })} step="0.1" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <input id="edit-pet-weight" aria-label="몸무게" type="number" value={state.editPet.weight} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "weight", value: e.target.value })} step="0.1" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
                   <div>
                     <label htmlFor="edit-pet-gender" className="block text-sm font-medium mb-1">성별</label>
-                    <select id="edit-pet-gender" value={state.editPet.gender} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "gender", value: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    <select id="edit-pet-gender" aria-label="성별" value={state.editPet.gender} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "gender", value: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                       <option value="male">남아</option>
                       <option value="female">여아</option>
                     </select>
                   </div>
                   <div className="flex items-end pb-1">
                     <label className="flex items-center gap-2 text-sm">
-                      <input id="edit-pet-neutered" type="checkbox" checked={state.editPet.neutered} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "neutered", value: e.target.checked })} className="rounded" />
+                      <input id="edit-pet-neutered" aria-label="중성화" type="checkbox" checked={state.editPet.neutered} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "neutered", value: e.target.checked })} className="rounded" />
                       중성화
                     </label>
                   </div>
                 </div>
                 <div>
                   <label htmlFor="edit-pet-notes" className="block text-sm font-medium mb-1">특이사항</label>
-                  <textarea id="edit-pet-notes" value={state.editPet.specialNotes} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "specialNotes", value: e.target.value })} rows={2} placeholder="공격성, 알러지, 주의사항 등" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                  <textarea id="edit-pet-notes" aria-label="특이사항" value={state.editPet.specialNotes} onChange={(e) => dispatch({ type: "SET_PET_FIELD", field: "specialNotes", value: e.target.value })} rows={2} placeholder="공격성, 알러지, 주의사항 등" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
                 </div>
               </>
             )}

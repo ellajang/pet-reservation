@@ -116,8 +116,8 @@ export default function CustomersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           id="customer-search"
-          placeholder="고객명, 연락처로 검색"
           aria-label="고객 검색"
+          placeholder="고객명, 연락처로 검색"
           className="w-full pl-10 pr-4 py-3 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
@@ -202,7 +202,7 @@ export default function CustomersPage() {
                 <div>
                   <label htmlFor="new-name" className="block text-sm font-medium mb-1">이름</label>
                   <input
-                    id="new-name"
+                    id="new-name" aria-label="이름"
                     type="text"
                     value={newCustomer.name}
                     onChange={(e) =>
@@ -215,7 +215,7 @@ export default function CustomersPage() {
                 <div>
                   <label htmlFor="new-phone" className="block text-sm font-medium mb-1">연락처</label>
                   <input
-                    id="new-phone"
+                    id="new-phone" aria-label="연락처"
                     type="tel"
                     value={newCustomer.phone}
                     onChange={(e) =>
@@ -235,7 +235,7 @@ export default function CustomersPage() {
                 <div>
                   <label htmlFor="new-pet-name" className="block text-sm font-medium mb-1">반려견 이름</label>
                   <input
-                    id="new-pet-name"
+                    id="new-pet-name" aria-label="반려견 이름"
                     type="text"
                     value={newCustomer.petName}
                     onChange={(e) =>
@@ -248,7 +248,7 @@ export default function CustomersPage() {
                 <div>
                   <label htmlFor="new-breed" className="block text-sm font-medium mb-1">견종</label>
                   <input
-                    id="new-breed"
+                    id="new-breed" aria-label="견종"
                     type="text"
                     value={newCustomer.breed}
                     onChange={(e) =>
@@ -265,7 +265,7 @@ export default function CustomersPage() {
                 <div>
                   <label htmlFor="new-weight" className="block text-sm font-medium mb-1">몸무게 (kg)</label>
                   <input
-                    id="new-weight"
+                    id="new-weight" aria-label="몸무게"
                     type="number"
                     value={newCustomer.weight}
                     onChange={(e) =>
@@ -278,7 +278,7 @@ export default function CustomersPage() {
                 <div>
                   <label htmlFor="new-gender" className="block text-sm font-medium mb-1">성별</label>
                   <select
-                    id="new-gender"
+                    id="new-gender" aria-label="성별"
                     value={newCustomer.gender}
                     onChange={(e) =>
                       setNewCustomer({ ...newCustomer, gender: e.target.value })
@@ -293,7 +293,7 @@ export default function CustomersPage() {
                   <label className="flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
-                      id="new-neutered"
+                      id="new-neutered" aria-label="중성화"
                       checked={newCustomer.neutered}
                       onChange={(e) =>
                         setNewCustomer({ ...newCustomer, neutered: e.target.checked })
@@ -308,7 +308,7 @@ export default function CustomersPage() {
               <div>
                 <label htmlFor="new-notes" className="block text-sm font-medium mb-1">특이사항</label>
                 <textarea
-                  id="new-notes"
+                  id="new-notes" aria-label="특이사항"
                   value={newCustomer.specialNotes}
                   onChange={(e) =>
                     setNewCustomer({ ...newCustomer, specialNotes: e.target.value })
