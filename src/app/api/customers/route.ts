@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/shared/lib/supabase";
+import { errorResponse } from "@/shared/lib/api-server";
 
 export async function GET(request: NextRequest) {
   const search = request.nextUrl.searchParams.get("search") || "";
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return errorResponse(error.message);
   return NextResponse.json(data);
 }
 
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (customerError) {
-    return NextResponse.json({ error: customerError.message }, { status: 500 });
+    return errorResponse(customerError.message);
   }
 
   // 반려견 등록
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (petError) {
-    return NextResponse.json({ error: petError.message }, { status: 500 });
+    return errorResponse(petError.message);
   }
 
   return NextResponse.json({ customer: customerData, pet: petData });

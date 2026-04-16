@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/shared/lib/supabase";
+import { setSessionCookies } from "@/shared/lib/auth";
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
@@ -16,22 +17,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 세션 토큰을 쿠키에 저장
   const response = NextResponse.json({ success: true });
-  response.cookies.set("sb-access-token", data.session.access_token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 60 * 60 * 18,
-    path: "/",
-  });
-  response.cookies.set("sb-refresh-token", data.session.refresh_token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 60 * 60 * 18,
-    path: "/",
-  });
-
+  setSessionCookies(response, data.session.access_token, data.session.refresh_token);
   return response;
 }

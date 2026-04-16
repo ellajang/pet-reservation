@@ -60,25 +60,63 @@ Supabase Authentication 기반 관리자 로그인. 18시간 세션 유지 + 자
 | 실시간 | Supabase Realtime |
 | 배포 | Vercel |
 
-## 프로젝트 구조
+## 아키텍처
+
+### Co-location 패턴
+
+페이지 전용 컴포넌트는 해당 라우트에 배치하고, 공통 요소만 `components/`에 분리합니다.
+
+| 폴더 | 역할 | 예시 |
+|------|------|------|
+| `app/(admin)/` | 관리자 페이지 + 전용 컴포넌트 | 예약 캘린더 뷰, 고객 모달 |
+| `app/(public)/` | 고객용 페이지 | 예약 폼, 동의서 |
+| `app/api/` | 백엔드 API 라우트 | CRUD, 인증, 실시간 |
+| `components/` | 공통 컴포넌트 | Sidebar, NotificationBell |
+| `hooks/` | TanStack Query 커스텀 훅 | useReservations, useCustomers |
+| `shared/` | 유틸, 상수, 타입, 인증 | API 헬퍼, Supabase 클라이언트 |
+
+### 상태관리 전략
+
+| 상태 유형 | 도구 | 사용처 |
+|-----------|------|--------|
+| 서버 데이터 (API) | TanStack Query | 모든 데이터 fetch/캐싱/갱신 |
+| 복잡한 UI 상태 | useReducer | 예약 관리 (뷰 모드, 날짜, 모달), 고객 예약 페이지 (멀티스텝 폼) |
+| 단순 폼/UI | useState | 설정, 로그인, 동의서 |
+
+### 데이터 흐름
 
 ```
-src/
-├── app/                          # 라우팅 + 페이지
-│   ├── (admin)/                  # 관리자 페이지 (로그인 필요)
-│   │   ├── dashboard/            # 대시보드
-│   │   ├── reservations/         # 예약 관리 + 컴포넌트
-│   │   ├── customers/            # 고객 관리 + 분석
-│   │   ├── sales/                # 매출 통계
-│   │   └── settings/             # 설정
-│   ├── (public)/                 # 고객용 페이지 (로그인 불필요)
-│   │   ├── booking/              # 예약
-│   │   └── consent/              # 동의서
-│   ├── api/                      # API 라우트
-│   └── login/                    # 로그인
-├── components/                   # 공통 컴포넌트
-├── hooks/                        # TanStack Query 커스텀 훅
-└── shared/                       # 유틸, 상수, 타입
+[고객 예약 페이지]                    [관리자 대시보드]
+  예약 요청 (POST)                     
+    → API Route                       Supabase Realtime
+      → Supabase DB INSERT    →→→     → 실시간 알림 (소리 + 푸시)
+                                      → 승인 대기 목록에 표시
+                                      → 승인/거절 클릭
+                                        → useMutation
+                                        → invalidateQueries
+                                        → 화면 자동 갱신
+```
+
+### 인증 흐름
+
+```
+로그인 → Supabase Auth (이메일/비밀번호)
+  → access token + refresh token 발급
+  → httpOnly 쿠키 저장 (18시간)
+  → 매 요청마다 auth/check에서 토큰 검증
+  → access token 만료 시 refresh token으로 자동 갱신
+```
+
+### 보안 구조
+
+```
+[브라우저]
+  NEXT_PUBLIC_SUPABASE_ANON_KEY (공개)
+    ↓
+  Supabase RLS가 차단
+    → 비로그인: 예약 등록 + 서비스 조회만 허용
+    → 로그인(관리자): 전체 접근
+    → 매출/미용기록: 비로그인 접근 불가
 ```
 
 ## 시작하기

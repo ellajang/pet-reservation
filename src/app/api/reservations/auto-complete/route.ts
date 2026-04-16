@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/shared/lib/supabase";
+import { errorResponse } from "@/shared/lib/api-server";
 
 // 시간이 지난 확정 예약을 자동으로 완료 처리
 export async function POST() {
@@ -25,7 +26,7 @@ export async function POST() {
     .select("id");
 
   if (err1 || err2) {
-    return NextResponse.json({ error: "자동 완료 처리 실패" }, { status: 500 });
+    return errorResponse("자동 완료 처리 실패");
   }
 
   const count = (pastDays?.length || 0) + (pastToday?.length || 0);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/shared/lib/supabase";
+import { errorResponse } from "@/shared/lib/api-server";
 
 export async function PATCH(
   request: NextRequest,
@@ -48,7 +49,7 @@ export async function PATCH(
     `)
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return errorResponse(error.message);
 
   // 노쇼 처리 시 고객 노쇼 카운트 증가
   if (body.status === "noshow" && data.customers) {

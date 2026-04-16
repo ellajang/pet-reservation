@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchJSON, postJSON, patchJSON } from "@/shared/lib/api";
+import { fetchJSON, postJSON, patchJSON, deleteJSON } from "@/shared/lib/api";
 
 export function useSettings() {
   return useQuery({
@@ -46,10 +46,7 @@ export function useUpdateService() {
 export function useDeleteService() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      fetch(`/api/services/${id}`, { method: "DELETE" }).then((res) => {
-        if (!res.ok) throw new Error("삭제에 실패했습니다");
-      }),
+    mutationFn: (id: string) => deleteJSON(`/api/services/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
     },

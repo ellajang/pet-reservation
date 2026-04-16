@@ -31,3 +31,8 @@ export async function patchJSON<T>(url: string, body: unknown): Promise<T> {
   }
   return res.json();
 }
+
+export async function deleteJSON(url: string): Promise<void> {
+  const res = await fetch(url, { method: "DELETE" });
+  if (!res.ok) throw new Error("삭제에 실패했습니다");
+}

@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/shared/lib/supabase";
+import { getCurrentMonthRange } from "@/shared/lib/api-server";
 
 export async function GET() {
   const now = new Date();
   const today = now.toISOString().split("T")[0];
-  const monthStart = today.slice(0, 7) + "-01";
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const monthEnd = `${today.slice(0, 7)}-${String(lastDay).padStart(2, "0")}`;
+  const { start: monthStart, end: monthEnd } = getCurrentMonthRange();
 
   const [todayRes, customersRes, monthSalesRes, noshowRes, pendingRes] = await Promise.all([
     // 오늘 예약

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/shared/lib/supabase";
+import { errorResponse, getMonthRange } from "@/shared/lib/api-server";
 
 export async function GET(request: NextRequest) {
   const date = request.nextUrl.searchParams.get("date");
@@ -19,15 +20,12 @@ export async function GET(request: NextRequest) {
   if (date) {
     query = query.eq("date", date);
   } else if (month) {
-    const [year, mon] = month.split("-").map(Number);
-    const lastDay = new Date(year, mon, 0).getDate();
-    query = query
-      .gte("date", `${month}-01`)
-      .lte("date", `${month}-${String(lastDay).padStart(2, "0")}`);
+    const { start, end } = getMonthRange(month);
+    query = query.gte("date", start).lte("date", end);
   }
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return errorResponse(error.message);
   return NextResponse.json(data);
 }
 
@@ -62,7 +60,7 @@ export async function POST(request: NextRequest) {
         .insert({ name: body.customerName, phone: body.customerPhone })
         .select()
         .single();
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error) return errorResponse(error.message);
       customerId = newCustomer.id;
     }
   }
@@ -83,7 +81,7 @@ export async function POST(request: NextRequest) {
       })
       .select()
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return errorResponse(error.message);
     petId = newPet.id;
   }
 
@@ -141,6 +139,6 @@ export async function POST(request: NextRequest) {
     `)
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return errorResponse(error.message);
   return NextResponse.json(reservation);
 }

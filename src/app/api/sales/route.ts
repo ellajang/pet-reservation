@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/shared/lib/supabase";
+import { errorResponse, getMonthRange } from "@/shared/lib/api-server";
 
 export async function GET(request: NextRequest) {
   const month = request.nextUrl.searchParams.get("month"); // YYYY-MM
@@ -17,15 +18,12 @@ export async function GET(request: NextRequest) {
     .order("date", { ascending: false });
 
   if (month) {
-    const [year, mon] = month.split("-").map(Number);
-    const lastDay = new Date(year, mon, 0).getDate();
-    query = query
-      .gte("date", `${month}-01`)
-      .lte("date", `${month}-${String(lastDay).padStart(2, "0")}`);
+    const { start, end } = getMonthRange(month);
+    query = query.gte("date", start).lte("date", end);
   }
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return errorResponse(error.message);
   return NextResponse.json(data);
 }
 
@@ -38,7 +36,7 @@ export async function POST(request: NextRequest) {
     .update({ status: "completed" })
     .eq("id", body.reservationId);
 
-  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+  if (updateError) return errorResponse(updateError.message);
 
   // 매출 기록
   const { data, error } = await supabase
@@ -51,6 +49,6 @@ export async function POST(request: NextRequest) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return errorResponse(error.message);
   return NextResponse.json(data);
 }

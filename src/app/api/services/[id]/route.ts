@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/shared/lib/supabase";
+import { errorResponse } from "@/shared/lib/api-server";
 
 export async function PATCH(
   request: NextRequest,
@@ -15,7 +16,7 @@ export async function PATCH(
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return errorResponse(error.message);
   return NextResponse.json(data);
 }
 
@@ -31,6 +32,6 @@ export async function DELETE(
     .update({ is_active: false })
     .eq("id", id);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return errorResponse(error.message);
   return NextResponse.json({ success: true });
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/shared/lib/supabase";
+import { errorResponse } from "@/shared/lib/api-server";
 
 export async function GET() {
   const { data, error } = await supabase
@@ -8,7 +9,7 @@ export async function GET() {
     .limit(1)
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return errorResponse(error.message);
   return NextResponse.json(data);
 }
 
@@ -38,6 +39,6 @@ export async function PATCH(request: NextRequest) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return errorResponse(error.message);
   return NextResponse.json(data);
 }

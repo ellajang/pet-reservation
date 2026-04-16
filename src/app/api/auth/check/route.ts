@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
+import { setSessionCookies } from "@/shared/lib/auth";
 
 export async function GET() {
   const cookieStore = await cookies();
@@ -21,7 +22,6 @@ export async function GET() {
     }
   );
 
-  // 토큰 유효성 검증
   const { data: { user }, error } = await supabase.auth.getUser();
 
   // 토큰 만료 시 refresh token으로 갱신
@@ -34,25 +34,11 @@ export async function GET() {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    // 새 토큰을 쿠키에 저장
     const response = NextResponse.json({
       authenticated: true,
       user: { email: refreshData.session.user.email },
     });
-    response.cookies.set("sb-access-token", refreshData.session.access_token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 60 * 60 * 18,
-      path: "/",
-    });
-    response.cookies.set("sb-refresh-token", refreshData.session.refresh_token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 60 * 60 * 18,
-      path: "/",
-    });
+    setSessionCookies(response, refreshData.session.access_token, refreshData.session.refresh_token);
     return response;
   }
 

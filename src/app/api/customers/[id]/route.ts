@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/shared/lib/supabase";
+import { errorResponse } from "@/shared/lib/api-server";
 
 // 고객 상세 조회 (예약 이력 포함)
 export async function GET(
@@ -19,7 +20,7 @@ export async function GET(
   ]);
 
   if (customerRes.error) {
-    return NextResponse.json({ error: customerRes.error.message }, { status: 500 });
+    return errorResponse(customerRes.error.message);
   }
 
   return NextResponse.json({
@@ -46,7 +47,7 @@ export async function PATCH(
         memo: body.customer.memo || null,
       })
       .eq("id", id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return errorResponse(error.message);
   }
 
   // 반려견 정보 수정
@@ -63,7 +64,7 @@ export async function PATCH(
         size_category: body.pet.sizeCategory || "small",
       })
       .eq("id", body.pet.id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return errorResponse(error.message);
   }
 
   return NextResponse.json({ success: true });

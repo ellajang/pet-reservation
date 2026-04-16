@@ -116,6 +116,7 @@ export default function CustomersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="고객명, 연락처로 검색"
+          aria-label="고객 검색"
           className="w-full pl-10 pr-4 py-3 bg-white border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
@@ -205,6 +206,7 @@ export default function CustomersPage() {
                     onChange={(e) =>
                       setNewCustomer({ ...newCustomer, name: e.target.value })
                     }
+                    aria-label="이름"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
@@ -218,6 +220,7 @@ export default function CustomersPage() {
                       setNewCustomer({ ...newCustomer, phone: e.target.value })
                     }
                     placeholder="010-0000-0000"
+                    aria-label="연락처"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
@@ -236,6 +239,7 @@ export default function CustomersPage() {
                     onChange={(e) =>
                       setNewCustomer({ ...newCustomer, petName: e.target.value })
                     }
+                    aria-label="반려견 이름"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
@@ -249,6 +253,7 @@ export default function CustomersPage() {
                       setNewCustomer({ ...newCustomer, breed: e.target.value })
                     }
                     placeholder="예: 말티즈"
+                    aria-label="견종"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     required
                   />
@@ -265,6 +270,7 @@ export default function CustomersPage() {
                       setNewCustomer({ ...newCustomer, weight: e.target.value })
                     }
                     step="0.1"
+                    aria-label="몸무게"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
@@ -275,6 +281,7 @@ export default function CustomersPage() {
                     onChange={(e) =>
                       setNewCustomer({ ...newCustomer, gender: e.target.value })
                     }
+                    aria-label="성별"
                     className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="male">남아</option>
@@ -289,6 +296,7 @@ export default function CustomersPage() {
                       onChange={(e) =>
                         setNewCustomer({ ...newCustomer, neutered: e.target.checked })
                       }
+                      aria-label="중성화"
                       className="rounded"
                     />
                     중성화
@@ -305,6 +313,7 @@ export default function CustomersPage() {
                   }
                   rows={3}
                   placeholder="공격성, 알러지, 주의사항 등"
+                  aria-label="특이사항"
                   className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                 />
               </div>
