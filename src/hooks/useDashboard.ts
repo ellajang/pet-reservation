@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchJSON } from "@/shared/lib/api";
+import { dashboardAPI } from "@/services/settingsAPI";
 
 export function useDashboard() {
   return useQuery({
     queryKey: ["dashboard"],
-    queryFn: () => fetchJSON("/api/dashboard"),
+    queryFn: () => dashboardAPI.get(),
   });
 }

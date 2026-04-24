@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchJSON } from "@/shared/lib/api";
+import { salesAPI } from "@/services/salesAPI";
 
 export function useSales(month: string) {
   return useQuery({
     queryKey: ["sales", month],
-    queryFn: () => fetchJSON(`/api/sales?month=${month}`),
+    queryFn: () => salesAPI.getByMonth(month),
   });
 }

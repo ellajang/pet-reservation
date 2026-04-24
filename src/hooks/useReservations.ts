@@ -1,13 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchJSON, patchJSON, postJSON } from "@/shared/lib/api";
+import { reservationAPI } from "@/services/reservationAPI";
 
 export function useReservations(month: string) {
   return useQuery({
     queryKey: ["reservations", month],
-    queryFn: async () => {
-      const data = await fetchJSON<unknown[]>(`/api/reservations?month=${month}`);
-      return Array.isArray(data) ? data : [];
-    },
+    queryFn: () => reservationAPI.getByMonth(month),
   });
 }
 
@@ -15,7 +12,7 @@ export function useUpdateReservationStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
-      patchJSON(`/api/reservations/${id}`, { status }),
+      reservationAPI.updateStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
@@ -29,7 +26,7 @@ export function useUpdateReservationStatus() {
 export function useCreateReservation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: unknown) => postJSON("/api/reservations", body),
+    mutationFn: (body: unknown) => reservationAPI.create(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
@@ -40,7 +37,7 @@ export function useCreateReservation() {
 export function useAutoComplete() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => postJSON("/api/reservations/auto-complete", {}),
+    mutationFn: () => reservationAPI.autoComplete(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },

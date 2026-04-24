@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import NotificationBell from "@/components/NotificationBell";
+import { useAuthCheck, useLogout } from "@/hooks/useAuth";
 import { LogOut } from "lucide-react";
 
 export default function AdminLayout({
@@ -11,24 +10,8 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    fetch("/api/auth/check")
-      .then((res) => {
-        if (res.ok) {
-          setAuthenticated(true);
-        } else {
-          router.push("/login");
-        }
-      });
-  }, [router]);
-
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-  };
+  const authenticated = useAuthCheck();
+  const logout = useLogout();
 
   if (authenticated === null) {
     return (
@@ -45,7 +28,7 @@ export default function AdminLayout({
         <header className="flex items-center justify-end gap-3 px-8 py-4 border-b border-border bg-white">
           <NotificationBell />
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className="flex items-center gap-1 text-sm text-muted hover:text-foreground p-2 hover:bg-gray-100 rounded-lg"
             title="로그아웃"
           >
