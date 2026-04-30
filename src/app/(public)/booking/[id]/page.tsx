@@ -311,17 +311,27 @@ export default function BookingPage() {
         </form>
       )}
 
-      {/* Step 2: 신규 고객 정보 */}
+      {/* Step 2: 신규 고객 정보 OR 기존 고객의 새 반려견 추가 */}
       {step === 2 && (
         <form onSubmit={(e) => { e.preventDefault(); dispatch({ type: "SET_STEP", step: 3 }); }} className="space-y-4">
-          <div className="bg-amber-50 rounded-xl p-4 text-sm text-amber-700">처음 방문이시네요! 간단한 정보를 입력해주세요.</div>
+          {existingCustomer ? (
+            <div className="bg-green-50 rounded-xl p-4 text-sm text-green-700">
+              {existingCustomer.name}님의 새 반려견 정보를 입력해주세요.
+            </div>
+          ) : (
+            <div className="bg-amber-50 rounded-xl p-4 text-sm text-amber-700">처음 방문이시네요! 간단한 정보를 입력해주세요.</div>
+          )}
 
-          <div>
-            <label className="block text-sm font-medium mb-1"><User className="w-4 h-4 inline mr-1" />보호자 이름</label>
-            <input type="text" aria-label="보호자 이름" value={form.name} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "name", value: e.target.value })} className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
-          </div>
+          {!existingCustomer && (
+            <>
+              <div>
+                <label className="block text-sm font-medium mb-1"><User className="w-4 h-4 inline mr-1" />보호자 이름</label>
+                <input type="text" aria-label="보호자 이름" value={form.name} onChange={(e) => dispatch({ type: "UPDATE_FORM", field: "name", value: e.target.value })} className="w-full border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary" required />
+              </div>
 
-          <hr className="border-border" />
+              <hr className="border-border" />
+            </>
+          )}
 
           <div>
             <label className="block text-sm font-medium mb-1"><Dog className="w-4 h-4 inline mr-1" />반려견 이름</label>
@@ -373,7 +383,7 @@ export default function BookingPage() {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => dispatch({ type: "SET_STEP", step: 1 })} className="flex-1 px-4 py-3 border border-border rounded-xl text-sm hover:bg-gray-50">이전</button>
+            <button type="button" onClick={() => dispatch({ type: "SET_STEP", step: existingCustomer ? 3 : 1 })} className="flex-1 px-4 py-3 border border-border rounded-xl text-sm hover:bg-gray-50">이전</button>
             <button type="submit" className="flex-1 px-4 py-3 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-hover">다음</button>
           </div>
         </form>
@@ -385,18 +395,28 @@ export default function BookingPage() {
           {existingCustomer && (
             <div className="bg-green-50 rounded-xl p-4 text-sm text-green-700 mb-4">
               <p className="font-medium">{existingCustomer.name}님, 다시 찾아주셨군요!</p>
-              {existingCustomer.pets.length > 1 && (
-                <div className="mt-2">
-                  <p className="text-xs mb-1">반려견을 선택해주세요:</p>
-                  <div className="flex gap-2">
-                    {existingCustomer.pets.map((pet) => (
-                      <button key={pet.id} type="button" onClick={() => dispatch({ type: "SELECT_PET", petId: pet.id, sizeCategory: pet.size_category || "small" })} className={`px-3 py-1 rounded-lg text-xs font-medium ${state.selectedPetId === pet.id ? "bg-green-600 text-white" : "bg-white border border-green-200"}`}>
-                        {pet.name} ({pet.breed})
-                      </button>
-                    ))}
-                  </div>
+              <div className="mt-2">
+                <p className="text-xs mb-1">반려견을 선택해주세요:</p>
+                <div className="flex gap-2 flex-wrap">
+                  {existingCustomer.pets.map((pet) => (
+                    <button
+                      key={pet.id}
+                      type="button"
+                      onClick={() => dispatch({ type: "SELECT_PET", petId: pet.id, sizeCategory: pet.size_category || "small" })}
+                      className={`px-3 py-1 rounded-lg text-xs font-medium ${state.selectedPetId === pet.id ? "bg-green-600 text-white" : "bg-white border border-green-200"}`}
+                    >
+                      {pet.name} ({pet.breed})
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => dispatch({ type: "SET_STEP", step: 2 })}
+                    className="px-3 py-1 rounded-lg text-xs font-medium bg-white border border-green-200 hover:bg-green-100"
+                  >
+                    + 새 반려견 추가
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
           )}
 

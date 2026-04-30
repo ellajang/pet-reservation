@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Search, Phone, Dog } from "lucide-react";
-import CustomerDetailModal from "./CustomerDetailModal";
 import { useCustomers, useCreateCustomer, useBlockCustomer } from "@/hooks/useCustomers";
 
 interface CustomerData {
@@ -17,10 +17,10 @@ interface CustomerData {
 }
 
 export default function CustomersPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [newCustomer, setNewCustomer] = useState({
     name: "",
     phone: "",
@@ -127,7 +127,7 @@ export default function CustomersPage() {
           customers.map((customer) => (
             <div
               key={customer.id}
-              onClick={() => setSelectedCustomerId(customer.id)}
+              onClick={() => router.push(`/customers/${customer.id}`)}
               className="bg-white rounded-xl border border-border shadow-sm p-4 hover:border-primary/30 transition-colors cursor-pointer"
             >
               <div className="flex items-center justify-between">
@@ -334,13 +334,6 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {selectedCustomerId && (
-        <CustomerDetailModal
-          customerId={selectedCustomerId}
-          onClose={() => setSelectedCustomerId(null)}
-          onUpdated={() => {}}
-        />
-      )}
     </div>
   );
 }
