@@ -1,0 +1,6 @@
+echo "🔨 빌드 검증 중..."
+npm run build || {
+  echo "❌ 빌드 실패! 푸시를 중단합니다."
+  exit 1
+}
+echo "✅ 빌드 성공"
