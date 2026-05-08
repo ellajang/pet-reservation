@@ -4,17 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Phone, Dog } from "lucide-react";
 import { useCustomers, useCreateCustomer, useBlockCustomer } from "@/hooks/useCustomers";
+import type { Customer } from "@/shared/types";
 
-interface CustomerData {
-  id: string;
-  name: string;
-  phone: string;
-  no_show_count: number;
-  is_blocked: boolean;
-  block_reason: string | null;
-  created_at: string;
+type CustomerData = Customer & {
   pets: { id: string; name: string; breed: string; weight: number | null }[];
-}
+};
 
 export default function CustomersPage() {
   const router = useRouter();

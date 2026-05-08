@@ -1,20 +1,15 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useMemo, use } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Clock, Scissors, Plus, Dog, X } from "lucide-react";
 import { useCustomerDetail, useUpdateCustomer } from "@/hooks/useCustomers";
 import { useCreatePet } from "@/hooks/usePets";
+import type { Reservation as ReservationBase } from "@/shared/types";
 
-interface Reservation {
-  id: string;
-  date: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  price: number;
+type Reservation = ReservationBase & {
   services: { name: string } | null;
-}
+};
 
 interface PetData {
   id: string;
@@ -64,10 +59,6 @@ export default function CustomerDetailPage({
   const { id: customerId } = use(params);
   const router = useRouter();
 
-  const [editName, setEditName] = useState("");
-  const [editPhone, setEditPhone] = useState("");
-  const [editMemo, setEditMemo] = useState("");
-  const [pets, setPets] = useState<PetData[]>([]);
   const [selectedPetIdx, setSelectedPetIdx] = useState(0);
   const [showAddPet, setShowAddPet] = useState(false);
   const [newPet, setNewPet] = useState<PetData>(emptyPet);
@@ -82,14 +73,16 @@ export default function CustomerDetailPage({
   const customer = data?.customer;
   const reservations = (data?.reservations || []) as Reservation[];
 
-  useEffect(() => {
-    if (!customer) return;
-    setEditName((customer.name as string) || "");
-    setEditPhone((customer.phone as string) || "");
-    setEditMemo((customer.memo as string) || "");
+  // 쿼리 데이터에서 직접 파생되는 폼 값 (effect 없이)
+  type EditValues = { name: string; phone: string; memo: string; pets: PetData[] };
+  const baseEdit: EditValues = useMemo(() => {
+    if (!customer) return { name: "", phone: "", memo: "", pets: [] };
     const petsArr = (customer.pets as Array<Record<string, unknown>>) || [];
-    setPets(
-      petsArr.map((p) => ({
+    return {
+      name: (customer.name as string) || "",
+      phone: (customer.phone as string) || "",
+      memo: (customer.memo as string) || "",
+      pets: petsArr.map((p) => ({
         id: p.id as string,
         name: p.name as string,
         breed: p.breed as string,
@@ -98,29 +91,37 @@ export default function CustomerDetailPage({
         neutered: (p.neutered as boolean) || false,
         specialNotes: (p.special_notes as string) || "",
         sizeCategory: (p.size_category as string) || "small",
-      }))
-    );
+      })),
+    };
   }, [customer]);
 
+  // 사용자 편집은 draft에 overlay (저장 성공 시 null로 리셋해서 baseEdit으로 복귀)
+  const [draftEdit, setDraftEdit] = useState<EditValues | null>(null);
+  const edit = draftEdit ?? baseEdit;
+  const updateEdit = (patch: Partial<EditValues>) => setDraftEdit({ ...edit, ...patch });
+
   const updatePetField = (field: keyof PetData, value: string | boolean) => {
-    setPets((prev) =>
-      prev.map((p, i) =>
+    updateEdit({
+      pets: edit.pets.map((p, i) =>
         i === selectedPetIdx ? { ...p, [field]: value } : p
-      )
-    );
+      ),
+    });
   };
 
   const handleSave = () => {
-    const selectedPet = pets[selectedPetIdx];
+    const selectedPet = edit.pets[selectedPetIdx];
     const body = {
-      customer: { name: editName, phone: editPhone, memo: editMemo },
+      customer: { name: edit.name, phone: edit.phone, memo: edit.memo },
       pet: selectedPet
         ? { ...selectedPet, weight: selectedPet.weight ? parseFloat(selectedPet.weight) : null }
         : undefined,
     };
 
     updateCustomer.mutate({ id: customerId, body }, {
-      onSuccess: () => alert("저장되었습니다"),
+      onSuccess: () => {
+        alert("저장되었습니다");
+        setDraftEdit(null);
+      },
       onError: (err: Error) => alert(err.message || "저장에 실패했습니다"),
     });
   };
@@ -162,7 +163,7 @@ export default function CustomerDetailPage({
   const completedCount = reservations.filter((r) => r.status === "completed").length;
   const cancelledCount = reservations.filter((r) => r.status === "cancelled").length;
   const totalSpent = reservations.filter((r) => r.status === "completed").reduce((sum, r) => sum + r.price, 0);
-  const currentPet = pets[selectedPetIdx];
+  const currentPet = edit.pets[selectedPetIdx];
 
   return (
     <div>
@@ -221,16 +222,16 @@ export default function CustomerDetailPage({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="edit-name" className="block text-sm font-medium mb-1">이름</label>
-                  <input id="edit-name" aria-label="이름" type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <input id="edit-name" aria-label="이름" type="text" value={edit.name} onChange={(e) => updateEdit({ name: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
                 <div>
                   <label htmlFor="edit-phone" className="block text-sm font-medium mb-1">연락처</label>
-                  <input id="edit-phone" aria-label="연락처" type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <input id="edit-phone" aria-label="연락처" type="tel" value={edit.phone} onChange={(e) => updateEdit({ phone: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
                 </div>
               </div>
               <div>
                 <label htmlFor="edit-memo" className="block text-sm font-medium mb-1">메모</label>
-                <textarea id="edit-memo" aria-label="메모" value={editMemo} onChange={(e) => setEditMemo(e.target.value)} rows={2} placeholder="고객 관련 메모" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                <textarea id="edit-memo" aria-label="메모" value={edit.memo} onChange={(e) => updateEdit({ memo: e.target.value })} rows={2} placeholder="고객 관련 메모" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
               </div>
             </div>
           </div>
@@ -238,7 +239,7 @@ export default function CustomerDetailPage({
           {/* 반려견 정보 */}
           <div className="bg-white rounded-xl border border-border shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">반려견 ({pets.length}마리)</h3>
+              <h3 className="font-semibold">반려견 ({edit.pets.length}마리)</h3>
               <button
                 onClick={() => setShowAddPet(true)}
                 className="flex items-center gap-1 text-sm bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-hover"
@@ -248,9 +249,9 @@ export default function CustomerDetailPage({
             </div>
 
             {/* 반려견 탭 */}
-            {pets.length > 1 && (
+            {edit.pets.length > 1 && (
               <div className="flex gap-2 flex-wrap mb-4">
-                {pets.map((p, i) => (
+                {edit.pets.map((p, i) => (
                   <button
                     key={p.id}
                     onClick={() => setSelectedPetIdx(i)}

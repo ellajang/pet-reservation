@@ -1,20 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo, useSyncExternalStore } from "react";
 import { Save, Copy, Check, Plus, Pencil, Trash2, X } from "lucide-react";
 import {
   useServices, useSettings, useSaveSettings,
   useCreateService, useUpdateService, useDeleteService,
 } from "@/hooks/useSettings";
-
-interface Service {
-  id: string;
-  name: string;
-  duration: number;
-  price: number;
-  description: string | null;
-  size_category: string;
-}
+import type { Service } from "@/shared/types";
 
 const sizeCategories = [
   { value: "small", label: "소형견" },
@@ -27,19 +19,25 @@ const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
 const emptyServiceForm = { name: "", duration: "", price: "", description: "", size_category: "small" };
 
+type ShopSettings = {
+  shopName: string;
+  hoursStart: string;
+  hoursEnd: string;
+  closedDays: number[];
+};
+
+// 브라우저 전용 값 — SSR snapshot은 빈 문자열, 클라이언트는 실제 origin
+const subscribeNoop = () => () => {};
+const getBookingUrl = () => `${window.location.origin}/booking/new`;
+const getServerBookingUrl = () => "";
+
 // === Component ===
 
 export default function SettingsPage() {
-  // 매장 설정
-  const [shopSettings, setShopSettings] = useState({
-    shopName: "펫살롱",
-    hoursStart: "09:00",
-    hoursEnd: "18:00",
-    closedDays: [0] as number[],
-  });
+  const bookingUrl = useSyncExternalStore(subscribeNoop, getBookingUrl, getServerBookingUrl);
+
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
-  const [bookingUrl, setBookingUrl] = useState("");
   const [copied, setCopied] = useState(false);
 
   // 서비스 관리 모달
@@ -57,21 +55,20 @@ export default function SettingsPage() {
   const updateService = useUpdateService();
   const deleteService = useDeleteService();
 
-  // 설정 데이터 로드
-  useEffect(() => {
-    if (settingsData && !("error" in settingsData)) {
-      setShopSettings({
-        shopName: (settingsData.shop_name as string) || "펫살롱",
-        hoursStart: (settingsData.business_hours_start as string)?.slice(0, 5) || "09:00",
-        hoursEnd: (settingsData.business_hours_end as string)?.slice(0, 5) || "18:00",
-        closedDays: (settingsData.closed_days as number[]) || [0],
-      });
-    }
-  }, [settingsData]);
+  // 쿼리 데이터에서 직접 파생되는 설정 (effect 없이)
+  const baseSettings: ShopSettings = useMemo(() => ({
+    shopName: (settingsData?.shop_name as string) || "펫살롱",
+    hoursStart: (settingsData?.business_hours_start as string)?.slice(0, 5) || "09:00",
+    hoursEnd: (settingsData?.business_hours_end as string)?.slice(0, 5) || "18:00",
+    closedDays: (settingsData?.closed_days as number[]) || [0],
+  }), [settingsData]);
 
-  useEffect(() => {
-    setBookingUrl(`${window.location.origin}/booking/new`);
-  }, []);
+  // 사용자 편집은 draft에 overlay (저장 성공 시 null로 리셋해서 baseSettings로 복귀)
+  const [draftSettings, setDraftSettings] = useState<ShopSettings | null>(null);
+  const shopSettings = draftSettings ?? baseSettings;
+  const updateShopSettings = (patch: Partial<ShopSettings>) => {
+    setDraftSettings({ ...shopSettings, ...patch });
+  };
 
   const handleSaveSettings = () => {
     setSaving(true);
@@ -83,7 +80,10 @@ export default function SettingsPage() {
         closedDays: shopSettings.closedDays,
       },
       {
-        onSuccess: () => setSaveMessage("저장되었습니다!"),
+        onSuccess: () => {
+          setSaveMessage("저장되었습니다!");
+          setDraftSettings(null);
+        },
         onError: () => setSaveMessage("저장에 실패했습니다"),
         onSettled: () => {
           setTimeout(() => setSaveMessage(""), 2000);
@@ -100,12 +100,11 @@ export default function SettingsPage() {
   };
 
   const toggleClosedDay = (day: number) => {
-    setShopSettings((s) => ({
-      ...s,
-      closedDays: s.closedDays.includes(day)
-        ? s.closedDays.filter((d) => d !== day)
-        : [...s.closedDays, day],
-    }));
+    updateShopSettings({
+      closedDays: shopSettings.closedDays.includes(day)
+        ? shopSettings.closedDays.filter((d) => d !== day)
+        : [...shopSettings.closedDays, day],
+    });
   };
 
   const openAddService = () => {
@@ -214,7 +213,7 @@ export default function SettingsPage() {
           <h3 className="font-semibold mb-4">매장 정보</h3>
           <div>
             <label className="block text-sm font-medium mb-1">매장명</label>
-            <input type="text" aria-label="매장명" value={shopSettings.shopName} onChange={(e) => setShopSettings((s) => ({ ...s, shopName: e.target.value }))}
+            <input type="text" aria-label="매장명" value={shopSettings.shopName} onChange={(e) => updateShopSettings({ shopName: e.target.value })}
               className="w-full max-w-md border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -226,12 +225,12 @@ export default function SettingsPage() {
           <div className="flex items-center gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">시작</label>
-              <input type="time" aria-label="영업시작시간" value={shopSettings.hoursStart} onChange={(e) => setShopSettings((s) => ({ ...s, hoursStart: e.target.value }))} className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              <input type="time" aria-label="영업시작시간" value={shopSettings.hoursStart} onChange={(e) => updateShopSettings({ hoursStart: e.target.value })} className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
             </div>
             <span className="mt-6">~</span>
             <div>
               <label className="block text-sm font-medium mb-1">종료</label>
-              <input type="time" aria-label="영업종료시간" value={shopSettings.hoursEnd} onChange={(e) => setShopSettings((s) => ({ ...s, hoursEnd: e.target.value }))} className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+              <input type="time" aria-label="영업종료시간" value={shopSettings.hoursEnd} onChange={(e) => updateShopSettings({ hoursEnd: e.target.value })} className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
             </div>
           </div>
           <div className="mt-4">

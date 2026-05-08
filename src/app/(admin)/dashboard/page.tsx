@@ -16,19 +16,13 @@ import {
 import { useDashboard } from "@/hooks/useDashboard";
 import { useAutoComplete, useUpdateReservationStatus } from "@/hooks/useReservations";
 import { useBlockCustomer } from "@/hooks/useCustomers";
+import type { Reservation as ReservationBase } from "@/shared/types";
 
-interface Reservation {
-  id: string;
-  date: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  price: number;
-  customer_id: string;
+type Reservation = ReservationBase & {
   customers: { name: string; phone: string };
   pets: { name: string; breed: string };
   services: { name: string };
-}
+};
 
 interface DashboardData {
   todayReservations: Reservation[];

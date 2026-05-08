@@ -3,20 +3,13 @@
 import { Clock, User, Check, X, Ban } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import type { Reservation } from "@/shared/types";
 
-export interface ReservationItem {
-  id: string;
-  date: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  price: number;
-  memo: string | null;
-  customer_id: string;
+export type ReservationItem = Reservation & {
   customers: { name: string; phone: string; is_blocked?: boolean };
   pets: { name: string; breed: string };
   services: { name: string };
-}
+};
 
 export const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
